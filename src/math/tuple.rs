@@ -22,14 +22,14 @@ impl Tuple {
     pub fn vector(x: f64, y: f64, z: f64) -> Tuple {
         Self { x, y, z, w: 0.0 }
     }
-    pub fn vectori(x: u32, y: u32, z: u32) -> Tuple {
+    pub fn vectori(x: i32, y: i32, z: i32) -> Tuple {
         Self::vector(x as f64, y as f64, z as f64)
     }
 
     pub fn point(x: f64, y: f64, z: f64) -> Tuple {
         Self { x, y, z, w: 1.0 }
     }
-    pub fn pointi(x: u32, y: u32, z: u32) -> Tuple {
+    pub fn pointi(x: i32, y: i32, z: i32) -> Tuple {
         Self::point(x as f64, y as f64, z as f64)
     }
 }
@@ -56,6 +56,22 @@ impl Tuple {
             z: self.z / mag,
             w: self.w / mag,
         }
+    }
+
+    pub fn dot(&self, other: &Self) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
+    }
+
+    pub fn cross(&self, other: &Self) -> Tuple {
+        if !self.is_vector() || !other.is_vector() {
+            panic!("cross product of non-vectors not supported")
+        }
+
+        Self::vector(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
     }
 }
 
@@ -295,5 +311,22 @@ mod tests {
             let vec = Tuple::vectori(1, 2, 3);
             assert_eq!(vec.normalize().magnitude(), 1.0)
         }
+    }
+
+    #[test]
+    fn dot() {
+        let a = Tuple::vectori(1, 2, 3);
+        let b = Tuple::vectori(2, 3, 4);
+
+        assert_eq!(a.dot(&b), 20.0);
+    }
+
+    #[test]
+    fn cross() {
+        let a = Tuple::vectori(1, 2, 3);
+        let b = Tuple::vectori(2, 3, 4);
+
+        assert_eq!(Tuple::cross(&a, &b), Tuple::vectori(-1, 2, -1));
+        assert_eq!(Tuple::cross(&b, &a), Tuple::vectori(1, -2, 1))
     }
 }
