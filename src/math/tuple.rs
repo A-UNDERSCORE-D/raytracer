@@ -1,4 +1,4 @@
-use std::ops::{Add, Neg, Sub};
+use std::ops::{Add, Mul, Neg, Sub};
 
 use super::float::equal;
 
@@ -17,6 +17,24 @@ pub struct Tuple {
     pub w: f64,
 }
 
+/// Constructors
+impl Tuple {
+    pub fn vector(x: f64, y: f64, z: f64) -> Tuple {
+        Self { x, y, z, w: 0.0 }
+    }
+    pub fn vectori(x: u32, y: u32, z: u32) -> Tuple {
+        Self::vector(x as f64, y as f64, z as f64)
+    }
+
+    pub fn point(x: f64, y: f64, z: f64) -> Tuple {
+        Self { x, y, z, w: 1.0 }
+    }
+    pub fn pointi(x: u32, y: u32, z: u32) -> Tuple {
+        Self::point(x as f64, y as f64, z as f64)
+    }
+}
+
+/// actual methods
 impl Tuple {
     pub fn is_point(&self) -> bool {
         self.w == 1.0
@@ -26,11 +44,18 @@ impl Tuple {
         self.w == 0.0
     }
 
-    pub fn vector(x: f64, y: f64, z: f64) -> Tuple {
-        Self { x, y, z, w: 0.0 }
+    pub fn magnitude(&self) -> f64 {
+        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2) + self.w.powi(2)).sqrt()
     }
-    pub fn point(x: f64, y: f64, z: f64) -> Tuple {
-        Self { x, y, z, w: 1.0 }
+
+    pub fn normalize(&self) -> Self {
+        let mag = self.magnitude();
+        Self {
+            x: self.x / mag,
+            y: self.y / mag,
+            z: self.z / mag,
+            w: self.w / mag,
+        }
     }
 }
 
@@ -42,6 +67,7 @@ impl PartialEq for Tuple {
             && equal(self.w, other.w)
     }
 }
+
 impl Add for Tuple {
     type Output = Tuple;
     fn add(self, other: Tuple) -> Tuple {
@@ -75,6 +101,25 @@ impl Neg for Tuple {
             z: -self.z,
             w: -self.w,
         }
+    }
+}
+
+impl Mul<f64> for Tuple {
+    type Output = Tuple;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+            w: self.w * rhs,
+        }
+    }
+}
+
+impl Mul<u32> for Tuple {
+    type Output = Tuple;
+    fn mul(self, rhs: u32) -> Self::Output {
+        self * rhs as f64
     }
 }
 
@@ -169,5 +214,86 @@ mod tests {
 
         assert!(!t.is_point());
         assert!(t.is_vector());
+    }
+
+    #[test]
+    fn test_neg() {
+        assert_eq!(
+            -Tuple::vector(1.0, -2.0, 3.0),
+            Tuple::vector(-1.0, 2.0, -3.0)
+        )
+    }
+
+    #[test]
+    fn test_mul_scalar() {
+        assert_eq!(
+            Tuple::vector(1.0, 2.0, 3.0) * 2,
+            Tuple::vector(2.0, 4.0, 6.0)
+        )
+    }
+
+    #[test]
+    fn test_mul_scalar_float() {
+        assert_eq!(
+            Tuple {
+                x: 1.0,
+                y: -2.0,
+                z: 3.0,
+                w: -4.0
+            } * 0.5,
+            Tuple {
+                x: 0.5,
+                y: -1.0,
+                z: 1.5,
+                w: -2.0
+            }
+        )
+    }
+
+    mod magnitude_tests {
+        use super::*;
+        macro_rules! mag_test {
+            ($name:ident, $input:expr, $expected:expr) => {
+                #[test]
+                fn $name() {
+                    assert_eq!(($input).magnitude(), $expected as f64)
+                }
+            };
+        }
+
+        mag_test!(unit_vector_1, Tuple::vector(1.0, 0.0, 0.0), 1);
+        mag_test!(unit_vector_2, Tuple::vector(0.0, 1.0, 0.0), 1);
+        mag_test!(unit_vector_3, Tuple::vector(0.0, 0.0, 1.0), 1);
+        mag_test!(magnitude, Tuple::vector(1.0, 2.0, 3.0), 14.0_f64.sqrt());
+        mag_test!(ozz, Tuple::vector(-1.0, -2.0, -3.0), 14.0_f64.sqrt());
+    }
+
+    mod normal_tests {
+        use super::*;
+        macro_rules! normalize_test {
+            ($name:ident, $input:expr, $expected:expr) => {
+                #[test]
+                fn $name() {
+                    assert_eq!($input.normalize(), $expected)
+                }
+            };
+        }
+
+        normalize_test!(four, Tuple::vector(3.0, 0.0, 0.0), Tuple::vectori(1, 0, 0));
+        normalize_test!(
+            complex,
+            Tuple::vectori(1, 2, 3),
+            Tuple::vector(
+                1.0 / 14_f64.sqrt(),
+                2.0 / 14_f64.sqrt(),
+                3.0 / 14_f64.sqrt()
+            )
+        );
+
+        #[test]
+        fn verify_magnitude() {
+            let vec = Tuple::vectori(1, 2, 3);
+            assert_eq!(vec.normalize().magnitude(), 1.0)
+        }
     }
 }
