@@ -122,9 +122,7 @@ mod test {
     #[test]
     fn index_assign() {
         let mut c = Canvas::new(10, 10);
-
         c[(4, 4)] = Colour::newi(1, 2, 3);
-
         assert_eq!(c[(4, 4)], Colour::newi(1, 2, 3))
     }
 
