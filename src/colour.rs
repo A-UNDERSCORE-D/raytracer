@@ -39,12 +39,12 @@ impl Colour {
     }
 
     pub fn to_ppm(&self) -> String {
-        const max_num: f64 = 255.0;
+        const MAX_NUM: f64 = 255.0;
         format!(
             "{} {} {}",
-            (self.red * max_num).round().clamp(0.0, max_num) as u64,
-            (self.green * max_num).round().clamp(0.0, max_num) as u64,
-            (self.blue * max_num).round().clamp(0.0, max_num) as u64,
+            (self.red * MAX_NUM).round().clamp(0.0, MAX_NUM) as u64,
+            (self.green * MAX_NUM).round().clamp(0.0, MAX_NUM) as u64,
+            (self.blue * MAX_NUM).round().clamp(0.0, MAX_NUM) as u64,
         )
     }
 }

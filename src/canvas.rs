@@ -56,53 +56,31 @@ impl Canvas {
 /// PPM tasks
 impl Canvas {
     pub fn into_ppm(&self) -> String {
-        let mut out = String::new();
-        out.push_str("P3\n");
-        out.push_str(
-            format!(
-                "{} {}\n{}\n",
-                self.width as usize, self.height as usize, 255
-            )
-            .as_str(),
-        );
-        let iter = self.iter().map(Colour::to_ppm);
-
-        let mut len = 0;
-        for (i, colour_ppm) in iter.enumerate() {
-            let next_len = len + colour_ppm.len() + 1;
-            if next_len >= 70 || i % self.width == 0 {
-                len = 0;
-                out.pop();
-                out.push('\n');
-            }
-            len += colour_ppm.len() + 1;
-            out.push_str(&colour_ppm);
-            out.push(' ');
-        }
-
-        out.pop(); // Drop the last space
-        out
-    }
-
-    fn into_ppm_2(&self) {
-        let mut out = format!("P3\n{} {}\n255\n", self.width as usize, self.height as usize).to_owned();
-        let stream: Vec<_> = self
+        let mut out = format!(
+            "P3\n{} {}\n255\n",
+            self.width as usize, self.height as usize
+        )
+        .to_owned();
+        let stream = self
             .iter()
             .map(Colour::to_ppm)
-            .flat_map(str.split_whitespace).collect();
+            .flat_map(|s| s.split_whitespace().map(&str::to_owned).collect::<Vec<_>>());
 
         let mut size = 0;
-        for (i, c) in stream.iter().enumerate() {
-            let next_len = size + c.len() + 1
-            if next_len >=70 || i % (self.width*3) == 0 {
+        for (i, c) in stream.enumerate() {
+            let next_len = size + c.len() + 1;
+            if next_len >= 70 || i % (self.width * 3) == 0 {
                 size = 0;
                 out.pop();
                 out.push('\n');
             }
 
             size += c.len() + 1;
-
+            out.push_str(c.as_str());
+            out.push(' ');
         }
+        out.pop(); // Drop trailing space
+        out
     }
 }
 
@@ -183,7 +161,7 @@ mod test {
 
         #[test]
         fn complex_data() {
-            let mut c = Canvas::new_with_colour(10, 2, Colour::new(1.0, 0.8, 0.6));
+            let c = Canvas::new_with_colour(10, 2, Colour::new(1.0, 0.8, 0.6));
 
             let ppm = c.into_ppm();
             let data: Vec<_> = ppm.lines().skip(3).collect();
