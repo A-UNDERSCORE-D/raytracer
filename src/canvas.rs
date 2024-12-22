@@ -39,7 +39,7 @@ impl Canvas {
 
     /// Access the underlying vector directly (Note this is NOT a mutable version)
     pub fn vec(&self) -> &Vec<Colour> {
-        return &self.data;
+        &self.data
     }
 
     /// Access the data within this canvas as an iterator. Due to the layout, this
@@ -56,11 +56,7 @@ impl Canvas {
 /// PPM tasks
 impl Canvas {
     pub fn into_ppm(&self) -> String {
-        let mut out = format!(
-            "P3\n{} {}\n255\n",
-            self.width as usize, self.height as usize
-        )
-        .to_owned();
+        let mut out = format!("P3\n{} {}\n255\n", self.width, self.height).to_owned();
         let stream = self
             .iter()
             .map(Colour::to_ppm)
