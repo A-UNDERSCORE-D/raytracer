@@ -1,12 +1,12 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::math::{self, float::equal};
+use crate::math::float::equal;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Colour {
-    red: f64,
-    green: f64,
-    blue: f64,
+    pub red: f64,
+    pub green: f64,
+    pub blue: f64,
 }
 
 macro_rules! impl_trait_simple {
@@ -28,6 +28,7 @@ impl_trait_simple!(Add, add, +);
 impl_trait_simple!(Sub, sub, -);
 impl_trait_simple!(Mul, mul, *);
 impl_trait_simple!(Div, div, /);
+
 impl Colour {
     pub fn new(red: f64, green: f64, blue: f64) -> Self {
         Self { red, green, blue }
@@ -35,6 +36,16 @@ impl Colour {
 
     pub fn newi(red: i32, green: i32, blue: i32) -> Self {
         Self::new(red as f64, green as f64, blue as f64)
+    }
+
+    pub fn to_ppm(&self) -> String {
+        const max_num: f64 = 255.0;
+        format!(
+            "{} {} {}",
+            (self.red * max_num).round().clamp(0.0, max_num) as u64,
+            (self.green * max_num).round().clamp(0.0, max_num) as u64,
+            (self.blue * max_num).round().clamp(0.0, max_num) as u64,
+        )
     }
 }
 
@@ -89,5 +100,20 @@ mod test {
     #[test]
     fn mul_scalar() {
         assert_eq!(Colour::new(0.2, 0.3, 0.4) * 2, Colour::new(0.4, 0.6, 0.8));
+    }
+
+    mod ppm {
+        use crate::colour::Colour;
+
+        #[test]
+        fn simple() {
+            assert_eq!(Colour::default().to_ppm(), "0 0 0")
+        }
+
+        #[test]
+        fn clamped() {
+            let c = Colour::new(-1.0, 0.5, 2.0);
+            assert_eq!(c.to_ppm(), "0 128 255")
+        }
     }
 }

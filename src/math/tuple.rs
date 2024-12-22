@@ -9,7 +9,7 @@ pub const ZERO: Tuple = Tuple {
     w: 0.0,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Tuple {
     pub x: f64,
     pub y: f64,
