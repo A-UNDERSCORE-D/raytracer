@@ -1,3 +1,4 @@
+use core::panicking::panic_const::panic_const_async_gen_fn_resumed_panic;
 use std::ops::{Add, Div, Mul, Sub};
 
 use crate::math::float::equal;
@@ -30,11 +31,11 @@ impl_trait_simple!(Mul, mul, *);
 impl_trait_simple!(Div, div, /);
 
 impl Colour {
-    pub fn new(red: f64, green: f64, blue: f64) -> Self {
+    pub const fn new(red: f64, green: f64, blue: f64) -> Self {
         Self { red, green, blue }
     }
 
-    pub fn newi(red: i32, green: i32, blue: i32) -> Self {
+    pub const fn newi(red: i32, green: i32, blue: i32) -> Self {
         Self::new(red as f64, green as f64, blue as f64)
     }
 
@@ -69,6 +70,12 @@ impl PartialEq for Colour {
     fn eq(&self, other: &Self) -> bool {
         equal(self.red, other.red) && equal(self.green, other.green) && equal(self.blue, other.blue)
     }
+}
+
+/// Namespaced colour defaults for ease of use
+impl Colour {
+    pub const RED: Colour = Colour::newi(255, 0, 0);
+    pub const BLACK: Colour = Colour::newi(0, 0, 0);
 }
 
 #[cfg(test)]
