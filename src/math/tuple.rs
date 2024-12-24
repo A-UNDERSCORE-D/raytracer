@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul, Neg, Sub};
 
-use super::float::equal;
+use super::{float::equal, matrix};
 
 pub const ZERO: Tuple = Tuple {
     x: 0.0,
@@ -136,6 +136,17 @@ impl Mul<u32> for Tuple {
     type Output = Tuple;
     fn mul(self, rhs: u32) -> Self::Output {
         self * rhs as f64
+    }
+}
+
+impl From<matrix::Ref<'_>> for Tuple {
+    fn from(value: matrix::Ref) -> Self {
+        Tuple {
+            x: value[0],
+            y: value[1],
+            z: value[2],
+            w: value[3],
+        }
     }
 }
 
