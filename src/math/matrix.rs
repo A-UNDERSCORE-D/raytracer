@@ -119,6 +119,27 @@ impl Mul for Matrix {
     }
 }
 
+impl Mul<&Matrix> for Matrix {
+    type Output = Self;
+    fn mul(self, rhs: &Matrix) -> Self::Output {
+        assert_eq!(self.height, rhs.height);
+        assert_eq!(self.width, rhs.width);
+        let mut data = vec![0.0; self.height * self.width];
+
+        for col in 0..self.width {
+            for row in 0..self.height {
+                data[col + (self.width * row)] = self
+                    .row(row)
+                    .iter()
+                    .zip(rhs.col(col).iter())
+                    .map(|(l, r)| l * r)
+                    .sum();
+            }
+        }
+        Matrix::new_with_data(self.width, self.height, data)
+    }
+}
+
 impl Mul<Tuple> for Matrix {
     type Output = Tuple;
     fn mul(self, rhs: Tuple) -> Self::Output {
@@ -174,7 +195,7 @@ indexer!(usize, self, index, self.data[index]);
 
 #[cfg(test)]
 mod test {
-    use crate::math::tuple::Tuple;
+    use crate::math::{matrix::IDENTITY_4X4, tuple::Tuple};
 
     use super::Matrix;
 
@@ -331,5 +352,37 @@ mod test {
         let b = Tuple::pointi(1, 2, 3); // 1
 
         assert_eq!(a * b, Tuple::pointi(18, 24, 33))
+    }
+
+    #[test]
+    fn identity() {
+        let m: Matrix = "\
+| 0 | 1 |  2 |  4 |
+| 1 | 2 |  4 |  8 |
+| 2 | 4 |  8 | 16 |
+| 4 | 8 | 16 | 32 |"
+            .parse()
+            .unwrap();
+
+        assert_eq!(m.clone() * &*IDENTITY_4X4, m);
+    }
+
+    #[test]
+    fn identity_tuple() {
+        assert_eq!(
+            IDENTITY_4X4.clone() // Clone required here because * moves the left hand side
+                * Tuple {
+                    x: 1.0,
+                    y: 2.0,
+                    z: 3.0,
+                    w: 4.0,
+                },
+            Tuple {
+                x: 1.0,
+                y: 2.0,
+                z: 3.0,
+                w: 4.0,
+            }
+        )
     }
 }
