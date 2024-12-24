@@ -116,6 +116,7 @@ mod test {
 
     #[test]
     #[should_panic]
+    #[allow(clippy::unnecessary_operation)]
     fn index_oob() {
         Canvas::new(1, 1)[(1, 1)];
     }
