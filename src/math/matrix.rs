@@ -101,6 +101,14 @@ impl Matrix {
         }
         Matrix::new_with_data(self.width - 1, self.height - 1, data)
     }
+
+    pub fn minor(&self, row: usize, col: usize) -> f64 {
+        self.submatrix(row, col).determinate()
+    }
+
+    pub fn cofactor(&self, row: usize, col: usize) -> f64 {
+        todo!()
+    }
 }
 
 pub static IDENTITY_4X4: LazyLock<Matrix> = LazyLock::new(|| Matrix {
@@ -147,7 +155,7 @@ impl Mul for Matrix {
                     .row(row)
                     .iter()
                     .zip(rhs.col(col).iter())
-                    .map(|(l, r)| l * r)
+                    .map(|(&l, &r)| l * r)
                     .sum();
             }
         }
@@ -473,5 +481,13 @@ mod test {
         let expected = Matrix::new_with_datai(3, 3, vec![-6, 1, 6, -8, 8, 6, -7, -1, 1]);
 
         assert_eq!(m.submatrix(2, 1), expected)
+    }
+
+    #[test]
+    fn minor() {
+        let m = Matrix::new_with_datai(3, 3, vec![3, 5, 0, 2, -1, -7, 6, -1, 5]);
+        let s = m.submatrix(1, 0);
+
+        assert_eq!(m.minor(1, 0), s.determinate())
     }
 }
