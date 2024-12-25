@@ -107,7 +107,12 @@ impl Matrix {
     }
 
     pub fn cofactor(&self, row: usize, col: usize) -> f64 {
-        todo!()
+        let minor = self.minor(row, col);
+        if (row + col) & 1 == 0 {
+            minor
+        } else {
+            -minor
+        }
     }
 }
 
@@ -489,5 +494,16 @@ mod test {
         let s = m.submatrix(1, 0);
 
         assert_eq!(m.minor(1, 0), s.determinate())
+    }
+
+    #[test]
+    fn cofactor() {
+        let m = Matrix::new_with_datai(3, 3, vec![3, 5, 0, 2, -1, -7, 6, -1, 5]);
+
+        assert_eq!(m.minor(0, 0), -12.0);
+        assert_eq!(m.cofactor(0, 0), -12.0);
+
+        assert_eq!(m.minor(1, 0), 25.0);
+        assert_eq!(m.cofactor(1, 0), -25.0);
     }
 }
