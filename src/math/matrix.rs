@@ -65,6 +65,16 @@ impl Matrix {
             count: self.width,
         }
     }
+
+    pub fn transpose(&self) -> Matrix {
+        Self::new_with_data(
+            self.width,
+            self.height,
+            (0..self.height)
+                .flat_map(|i| self.col(i).iter().copied().collect::<Vec<_>>())
+                .collect(),
+        )
+    }
 }
 
 pub static IDENTITY_4X4: LazyLock<Matrix> = LazyLock::new(|| Matrix {
@@ -384,5 +394,30 @@ mod test {
                 w: 4.0,
             }
         )
+    }
+
+    #[test]
+    fn transpose_ident() {
+        assert_eq!(IDENTITY_4X4.transpose(), *IDENTITY_4X4)
+    }
+
+    #[test]
+    fn transpose() {
+        let a: Matrix = "\
+| 0 | 9 | 3 | 0 |
+| 9 | 8 | 0 | 8 |
+| 1 | 8 | 5 | 3 |
+| 0 | 0 | 5 | 8 |"
+            .parse()
+            .unwrap();
+        let expected: Matrix = "\
+| 0 | 9 | 1 | 0 |
+| 9 | 8 | 8 | 0 |
+| 3 | 0 | 5 | 5 |
+| 0 | 8 | 3 | 8 |"
+            .parse()
+            .unwrap();
+
+        assert_eq!(a.transpose(), expected)
     }
 }
