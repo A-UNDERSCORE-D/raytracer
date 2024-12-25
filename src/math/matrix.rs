@@ -45,6 +45,10 @@ impl Matrix {
         }
     }
 
+    pub fn new_with_datai(width: usize, height: usize, data: Vec<i32>) -> Self {
+        Self::new_with_data(width, height, data.into_iter().map(f64::from).collect())
+    }
+
     fn make_index(width: usize, col: usize, row: usize) -> usize {
         (width * row) + col
     }
@@ -66,6 +70,8 @@ impl Matrix {
         }
     }
 
+    // * And here begins the more mathy functions...
+
     pub fn transpose(&self) -> Matrix {
         Self::new_with_data(
             self.width,
@@ -74,6 +80,26 @@ impl Matrix {
                 .flat_map(|i| self.col(i).iter().copied().collect::<Vec<_>>())
                 .collect(),
         )
+    }
+
+    pub fn determinate(&self) -> f64 {
+        match (self.width, self.height) {
+            (2, 2) => (self[0] * self[3]) - (self[1] * self[2]),
+            _ => panic!(
+                "Dont know how to calc determinate for {}x{}",
+                self.width, self.height
+            ),
+        }
+    }
+
+    pub fn submatrix(&self, row: usize, col: usize) -> Matrix {
+        let mut data = Vec::with_capacity((self.width - 1) * (self.height - 1));
+        for r in (0..self.height).filter(|&v| v != row) {
+            for c in (0..self.width).filter(|&c| c != col) {
+                data.push(self[(r, c)]);
+            }
+        }
+        Matrix::new_with_data(self.width - 1, self.height - 1, data)
     }
 }
 
@@ -419,5 +445,33 @@ mod test {
             .unwrap();
 
         assert_eq!(a.transpose(), expected)
+    }
+
+    #[test]
+    fn determinate() {
+        let m = Matrix::new_with_data(2, 2, vec![1.0, 5.0, -3.0, 2.0]);
+
+        assert_eq!(m.determinate(), 17.0)
+    }
+
+    #[test]
+    fn submatrix() {
+        let m = Matrix::new_with_datai(3, 3, vec![1, 5, 0, -3, 2, 7, 0, 6, -3]);
+        let sub = Matrix::new_with_datai(2, 2, vec![-3, 2, 0, 6]);
+
+        assert_eq!(m.submatrix(0, 2), sub)
+    }
+
+    #[test]
+    fn submatrix_4x4() {
+        let m = Matrix::new_with_datai(
+            4,
+            4,
+            vec![-6, 1, 1, 6, -8, 5, 8, 6, -1, 0, 8, 2, -7, 1, -1, 1],
+        );
+
+        let expected = Matrix::new_with_datai(3, 3, vec![-6, 1, 6, -8, 8, 6, -7, -1, 1]);
+
+        assert_eq!(m.submatrix(2, 1), expected)
     }
 }
