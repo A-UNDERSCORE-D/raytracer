@@ -37,7 +37,8 @@ impl Matrix {
         Self::new_with_data(width, height, vec![0.0; width * height])
     }
 
-    pub const fn new_with_data(width: usize, height: usize, data: Vec<f64>) -> Self {
+    pub fn new_with_data(width: usize, height: usize, data: Vec<f64>) -> Self {
+        assert_eq!(width * height, data.len());
         Self {
             width,
             height,
@@ -120,6 +121,26 @@ impl Matrix {
     pub fn can_invert(&self) -> bool {
         self.determinate() != 0.0
     }
+
+    pub fn inverse(&self) -> Option<Matrix> {
+        let determinate = self.determinate();
+
+        if determinate == 0.0 {
+            return None;
+        }
+
+        let mut out = Matrix::new(4, 4);
+        for row in 0..self.height {
+            for col in 0..self.width {
+                let cofactor = self.cofactor(row, col);
+
+                // Intentionally flipped
+                out[(col, row)] = cofactor / determinate;
+            }
+        }
+
+        Some(out)
+    }
 }
 
 pub static IDENTITY_4X4: LazyLock<Matrix> = LazyLock::new(|| Matrix {
@@ -174,9 +195,9 @@ impl Mul for Matrix {
     }
 }
 
-impl Mul<&Matrix> for Matrix {
-    type Output = Self;
-    fn mul(self, rhs: &Matrix) -> Self::Output {
+impl Mul for &Matrix {
+    type Output = Matrix;
+    fn mul(self, rhs: Self) -> Self::Output {
         assert_eq!(self.height, rhs.height);
         assert_eq!(self.width, rhs.width);
         let mut data = vec![0.0; self.height * self.width];
@@ -419,7 +440,7 @@ mod test {
             .parse()
             .unwrap();
 
-        assert_eq!(m.clone() * &*IDENTITY_4X4, m);
+        assert_eq!(&m * &*IDENTITY_4X4, m);
     }
 
     #[test]
@@ -535,5 +556,85 @@ mod test {
         assert_eq!(m.cofactor(0, 2), 210.0);
         assert_eq!(m.cofactor(0, 3), 51.0);
         assert_eq!(m.determinate(), -4071.0)
+    }
+
+    #[test]
+    fn inverse() {
+        let a = Matrix::new_with_datai(
+            4,
+            4,
+            vec![-5, 2, 6, -8, 1, -5, 1, 8, 7, 7, -6, -7, 1, -3, 7, 4],
+        );
+        let b = a.inverse().expect("This matrix should be invertable");
+        let expected = Matrix::new_with_data(
+            4,
+            4,
+            vec![
+                0.21805, 0.45113, 0.24060, -0.04511, -0.80827, -1.45677, -0.44361, 0.52068,
+                -0.07895, -0.22368, -0.05263, 0.19737, -0.52256, -0.81391, -0.30075, 0.30639,
+            ],
+        );
+
+        assert_eq!(a.determinate(), 532.0);
+        assert_eq!(a.cofactor(2, 3), -160.0);
+        assert_eq!(b[(3, 2)], -160.0 / 532.0);
+        assert_eq!(a.cofactor(3, 2), 105.0);
+        assert_eq!(b[(2, 3)], 105.0 / 532.0);
+
+        assert_eq!(b, expected);
+    }
+
+    #[test]
+    fn inverse_2() {
+        let m = Matrix::new_with_datai(
+            4,
+            4,
+            vec![8, -5, 9, 2, 7, 5, 6, 1, -6, 0, 9, 6, -3, 0, -9, -4],
+        );
+
+        let expected = Matrix::new_with_data(
+            4,
+            4,
+            vec![
+                -0.15385, -0.15385, -0.28205, -0.53846, -0.07692, 0.12308, 0.02564, 0.03077,
+                0.35897, 0.35897, 0.43590, 0.92308, -0.69231, -0.69231, -0.76923, -1.92308,
+            ],
+        );
+
+        assert_eq!(m.inverse().expect("must be invertable"), expected)
+    }
+
+    #[test]
+    fn inverse_3() {
+        let m = Matrix::new_with_datai(
+            4,
+            4,
+            vec![9, 3, 0, 9, -5, -2, -6, -3, -4, 9, 6, 4, -7, 6, 6, 2],
+        );
+
+        let expected = Matrix::new_with_data(
+            4,
+            4,
+            vec![
+                -0.04074, -0.07778, 0.14444, -0.22222, -0.07778, 0.03333, 0.36667, -0.33333,
+                -0.02901, -0.14630, -0.10926, 0.12963, 0.17778, 0.06667, -0.26667, 0.33333,
+            ],
+        );
+
+        assert_eq!(m.inverse().expect("Must be invertab;e"), expected)
+    }
+
+    #[test]
+    fn e2e_inversion() {
+        let a = Matrix::new_with_datai(
+            4,
+            4,
+            vec![3, -9, 7, 3, 3, -8, 2, -9, -4, 4, 4, 1, -6, 5, -1, 1],
+        );
+        let b =
+            Matrix::new_with_datai(4, 4, vec![8, 2, 2, 2, 3, -1, 7, 0, 7, 0, 5, 4, 6, -2, 0, 5]);
+
+        let c = &a * &b;
+        assert_eq!(c * b.inverse().unwrap(), a)
     }
 }
