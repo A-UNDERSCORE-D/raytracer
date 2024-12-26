@@ -74,7 +74,11 @@ impl Matrix {
     // * Generators for specific types of matricies
 
     pub fn translation(x: f64, y: f64, z: f64) -> Self {
-        todo!()
+        let mut base = IDENTITY_4X4.clone();
+        base[(0, 3)] = x;
+        base[(1, 3)] = y;
+        base[(2, 3)] = z;
+        base
     }
 
     pub fn translationi(x: i32, y: i32, z: i32) -> Self {
