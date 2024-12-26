@@ -71,6 +71,16 @@ impl Matrix {
         }
     }
 
+    // * Generators for specific types of matricies
+
+    pub fn translation(x: f64, y: f64, z: f64) -> Self {
+        todo!()
+    }
+
+    pub fn translationi(x: i32, y: i32, z: i32) -> Self {
+        Self::translation(x as f64, y as f64, z as f64)
+    }
+
     // * And here begins the more mathy functions...
 
     pub fn transpose(&self) -> Matrix {
@@ -636,5 +646,22 @@ mod test {
 
         let c = &a * &b;
         assert_eq!(c * b.inverse().unwrap(), a)
+    }
+
+    mod translation {
+        use super::*;
+        #[test]
+        fn simple() {
+            let t = Matrix::translationi(5, -3, 2);
+            let p = Tuple::pointi(-3, 4, 5);
+
+            assert_eq!(t * p, Tuple::pointi(2, 1, 7))
+        }
+        #[test]
+        fn inverse() {
+            let inv = Matrix::translationi(5, -3, 2).inverse().unwrap();
+            let p = Tuple::pointi(-3, 4, 5);
+            assert_eq!(inv * p, Tuple::pointi(-8, 7, 3))
+        }
     }
 }
