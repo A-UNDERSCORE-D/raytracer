@@ -85,10 +85,12 @@ impl Matrix {
     pub fn determinate(&self) -> f64 {
         match (self.width, self.height) {
             (2, 2) => (self[0] * self[3]) - (self[1] * self[2]),
-            _ => panic!(
-                "Dont know how to calc determinate for {}x{}",
-                self.width, self.height
-            ),
+            _ => self
+                .row(0)
+                .iter()
+                .enumerate()
+                .map(|(col, &v)| v * self.cofactor(0, col))
+                .sum(),
         }
     }
 
@@ -113,6 +115,10 @@ impl Matrix {
         } else {
             -minor
         }
+    }
+
+    pub fn can_invert(&self) -> bool {
+        self.determinate() != 0.0
     }
 }
 
@@ -505,5 +511,29 @@ mod test {
 
         assert_eq!(m.minor(1, 0), 25.0);
         assert_eq!(m.cofactor(1, 0), -25.0);
+    }
+
+    #[test]
+    fn determinate_3x3() {
+        let m = Matrix::new_with_datai(3, 3, vec![1, 2, 6, -5, 8, -4, 2, 6, 4]);
+        assert_eq!(m.cofactor(0, 0), 56.0);
+        assert_eq!(m.cofactor(0, 1), 12.0);
+        assert_eq!(m.cofactor(0, 2), -46.0);
+        assert_eq!(m.determinate(), -196.0);
+    }
+
+    #[test]
+    fn determinate_4x4() {
+        let m = Matrix::new_with_datai(
+            4,
+            4,
+            vec![-2, -8, 3, 5, -3, 1, 7, 3, 1, 2, -9, 6, -6, 7, 7, -9],
+        );
+
+        assert_eq!(m.cofactor(0, 0), 690.0);
+        assert_eq!(m.cofactor(0, 1), 447.0);
+        assert_eq!(m.cofactor(0, 2), 210.0);
+        assert_eq!(m.cofactor(0, 3), 51.0);
+        assert_eq!(m.determinate(), -4071.0)
     }
 }
