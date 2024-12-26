@@ -85,6 +85,18 @@ impl Matrix {
         Self::translation(x as f64, y as f64, z as f64)
     }
 
+    pub fn scale(x: f64, y: f64, z: f64) -> Self {
+        let mut base = IDENTITY_4X4.clone();
+        base[(0, 0)] = x;
+        base[(1, 1)] = y;
+        base[(2, 2)] = z;
+        base
+    }
+
+    pub fn scalei(x: i32, y: i32, z: i32) -> Self {
+        Self::scale(x as f64, y as f64, z as f64)
+    }
+
     // * And here begins the more mathy functions...
 
     pub fn transpose(&self) -> Matrix {
@@ -652,20 +664,54 @@ mod test {
         assert_eq!(c * b.inverse().unwrap(), a)
     }
 
-    mod translation {
+    mod transformation {
         use super::*;
-        #[test]
-        fn simple() {
-            let t = Matrix::translationi(5, -3, 2);
-            let p = Tuple::pointi(-3, 4, 5);
 
-            assert_eq!(t * p, Tuple::pointi(2, 1, 7))
+        macro_rules! translation_test {
+            ($name:ident, $matrix:expr, $tuple:expr, $expected:expr) => {
+                #[test]
+                fn $name() {
+                    let transform: Matrix = $matrix;
+                    let tuple: Tuple = $tuple;
+
+                    assert_eq!(transform * tuple, $expected);
+                }
+            };
         }
-        #[test]
-        fn inverse() {
-            let inv = Matrix::translationi(5, -3, 2).inverse().unwrap();
-            let p = Tuple::pointi(-3, 4, 5);
-            assert_eq!(inv * p, Tuple::pointi(-8, 7, 3))
-        }
+
+        translation_test!(
+            trans_simple,
+            Matrix::translationi(5, -3, 2),
+            Tuple::pointi(-3, 4, 5),
+            Tuple::pointi(2, 1, 7)
+        );
+
+        translation_test!(
+            trans_inverse,
+            Matrix::translationi(5, -3, 2).inverse().unwrap(),
+            Tuple::pointi(-3, 4, 5),
+            Tuple::pointi(-8, 7, 3)
+        );
+
+        translation_test!(
+            scale_simple,
+            Matrix::scalei(2, 3, 4),
+            Tuple::pointi(-4, 6, 8),
+            Tuple::pointi(-8, 18, 32)
+        );
+
+        translation_test!(
+            scale_vec,
+            Matrix::scalei(2, 3, 4),
+            Tuple::vectori(-4, 6, 8),
+            Tuple::vectori(-8, 18, 32)
+        );
+
+        translation_test!(
+            scale_reflect,
+            Matrix::scalei(-1, 1, 1),
+            Tuple::pointi(2, 3, 4),
+            Tuple::pointi(-2, 3, 4)
+        );
     }
 }
