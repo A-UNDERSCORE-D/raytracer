@@ -97,6 +97,47 @@ impl Matrix {
         Self::scale(x as f64, y as f64, z as f64)
     }
 
+    pub fn rotate_x(radians: f64) -> Self {
+        let mut out = IDENTITY_4X4.clone();
+
+        let sin = radians.sin();
+        let cos = radians.cos();
+
+        out[(1, 1)] = cos;
+        out[(1, 2)] = -sin;
+        out[(2, 1)] = sin;
+        out[(2, 2)] = cos;
+
+        out
+    }
+
+    pub fn rotate_y(radians: f64) -> Self {
+        let mut out = IDENTITY_4X4.clone();
+
+        let sin = radians.sin();
+        let cos = radians.cos();
+
+        out[(0, 0)] = cos;
+        out[(0, 2)] = sin;
+        out[(2, 0)] = -sin;
+        out[(2, 2)] = cos;
+
+        out
+    }
+
+    pub fn rotate_z(radians: f64) -> Self {
+        let mut out = IDENTITY_4X4.clone();
+
+        let sin = radians.sin();
+        let cos = radians.cos();
+
+        out[(0, 0)] = cos;
+        out[(0, 1)] = -sin;
+        out[(1, 0)] = sin;
+        out[(1, 1)] = cos;
+
+        out
+    }
     // * And here begins the more mathy functions...
 
     pub fn transpose(&self) -> Matrix {
@@ -712,6 +753,51 @@ mod test {
             Matrix::scalei(-1, 1, 1),
             Tuple::pointi(2, 3, 4),
             Tuple::pointi(-2, 3, 4)
+        );
+
+        translation_test!(
+            rotate_x_half_quarter,
+            Matrix::rotate_x(45_f64.to_radians()),
+            Tuple::pointi(0, 1, 0),
+            Tuple::point(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
+        );
+        translation_test!(
+            rotate_x_quarter,
+            Matrix::rotate_x(90_f64.to_radians()),
+            Tuple::pointi(0, 1, 0),
+            Tuple::pointi(0, 0, 1)
+        );
+
+        translation_test!(
+            rotate_x_half_quarter_inverse,
+            Matrix::rotate_x(45_f64.to_radians()).inverse().unwrap(),
+            Tuple::pointi(0, 1, 0),
+            Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0))
+        );
+
+        translation_test!(
+            rotate_y_half_quater,
+            Matrix::rotate_y(std::f64::consts::FRAC_PI_4),
+            Tuple::pointi(0, 0, 1),
+            Tuple::point(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0)
+        );
+        translation_test!(
+            rotate_y_quater,
+            Matrix::rotate_y(std::f64::consts::FRAC_PI_2),
+            Tuple::pointi(0, 0, 1),
+            Tuple::pointi(1, 0, 0)
+        );
+        translation_test!(
+            rotate_z_half_quater,
+            Matrix::rotate_z(std::f64::consts::FRAC_PI_4),
+            Tuple::pointi(0, 1, 0),
+            Tuple::point(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
+        );
+        translation_test!(
+            rotate_z_quater,
+            Matrix::rotate_z(std::f64::consts::FRAC_PI_2),
+            Tuple::pointi(0, 1, 0),
+            Tuple::pointi(-1, 0, 0)
         );
     }
 }
