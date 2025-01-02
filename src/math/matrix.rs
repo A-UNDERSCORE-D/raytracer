@@ -5,6 +5,7 @@ use std::{
 };
 
 use super::{float, tuple::Tuple};
+mod transform;
 
 #[derive(Clone, Debug)]
 pub struct Matrix {
@@ -71,73 +72,6 @@ impl Matrix {
         }
     }
 
-    // * Generators for specific types of matricies
-
-    pub fn translation(x: f64, y: f64, z: f64) -> Self {
-        let mut base = IDENTITY_4X4.clone();
-        base[(0, 3)] = x;
-        base[(1, 3)] = y;
-        base[(2, 3)] = z;
-        base
-    }
-
-    pub fn translationi(x: i32, y: i32, z: i32) -> Self {
-        Self::translation(x as f64, y as f64, z as f64)
-    }
-
-    pub fn scale(x: f64, y: f64, z: f64) -> Self {
-        let mut base = IDENTITY_4X4.clone();
-        base[(0, 0)] = x;
-        base[(1, 1)] = y;
-        base[(2, 2)] = z;
-        base
-    }
-
-    pub fn scalei(x: i32, y: i32, z: i32) -> Self {
-        Self::scale(x as f64, y as f64, z as f64)
-    }
-
-    pub fn rotate_x(radians: f64) -> Self {
-        let mut out = IDENTITY_4X4.clone();
-
-        let sin = radians.sin();
-        let cos = radians.cos();
-
-        out[(1, 1)] = cos;
-        out[(1, 2)] = -sin;
-        out[(2, 1)] = sin;
-        out[(2, 2)] = cos;
-
-        out
-    }
-
-    pub fn rotate_y(radians: f64) -> Self {
-        let mut out = IDENTITY_4X4.clone();
-
-        let sin = radians.sin();
-        let cos = radians.cos();
-
-        out[(0, 0)] = cos;
-        out[(0, 2)] = sin;
-        out[(2, 0)] = -sin;
-        out[(2, 2)] = cos;
-
-        out
-    }
-
-    pub fn rotate_z(radians: f64) -> Self {
-        let mut out = IDENTITY_4X4.clone();
-
-        let sin = radians.sin();
-        let cos = radians.cos();
-
-        out[(0, 0)] = cos;
-        out[(0, 1)] = -sin;
-        out[(1, 0)] = sin;
-        out[(1, 1)] = cos;
-
-        out
-    }
     // * And here begins the more mathy functions...
 
     pub fn transpose(&self) -> Matrix {
@@ -703,101 +637,5 @@ mod test {
 
         let c = &a * &b;
         assert_eq!(c * b.inverse().unwrap(), a)
-    }
-
-    mod transformation {
-        use super::*;
-
-        macro_rules! translation_test {
-            ($name:ident, $matrix:expr, $tuple:expr, $expected:expr) => {
-                #[test]
-                fn $name() {
-                    let transform: Matrix = $matrix;
-                    let tuple: Tuple = $tuple;
-
-                    assert_eq!(transform * tuple, $expected);
-                }
-            };
-        }
-
-        translation_test!(
-            trans_simple,
-            Matrix::translationi(5, -3, 2),
-            Tuple::pointi(-3, 4, 5),
-            Tuple::pointi(2, 1, 7)
-        );
-
-        translation_test!(
-            trans_inverse,
-            Matrix::translationi(5, -3, 2).inverse().unwrap(),
-            Tuple::pointi(-3, 4, 5),
-            Tuple::pointi(-8, 7, 3)
-        );
-
-        translation_test!(
-            scale_simple,
-            Matrix::scalei(2, 3, 4),
-            Tuple::pointi(-4, 6, 8),
-            Tuple::pointi(-8, 18, 32)
-        );
-
-        translation_test!(
-            scale_vec,
-            Matrix::scalei(2, 3, 4),
-            Tuple::vectori(-4, 6, 8),
-            Tuple::vectori(-8, 18, 32)
-        );
-
-        translation_test!(
-            scale_reflect,
-            Matrix::scalei(-1, 1, 1),
-            Tuple::pointi(2, 3, 4),
-            Tuple::pointi(-2, 3, 4)
-        );
-
-        translation_test!(
-            rotate_x_half_quarter,
-            Matrix::rotate_x(45_f64.to_radians()),
-            Tuple::pointi(0, 1, 0),
-            Tuple::point(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
-        );
-        translation_test!(
-            rotate_x_quarter,
-            Matrix::rotate_x(90_f64.to_radians()),
-            Tuple::pointi(0, 1, 0),
-            Tuple::pointi(0, 0, 1)
-        );
-
-        translation_test!(
-            rotate_x_half_quarter_inverse,
-            Matrix::rotate_x(45_f64.to_radians()).inverse().unwrap(),
-            Tuple::pointi(0, 1, 0),
-            Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0))
-        );
-
-        translation_test!(
-            rotate_y_half_quater,
-            Matrix::rotate_y(std::f64::consts::FRAC_PI_4),
-            Tuple::pointi(0, 0, 1),
-            Tuple::point(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0)
-        );
-        translation_test!(
-            rotate_y_quater,
-            Matrix::rotate_y(std::f64::consts::FRAC_PI_2),
-            Tuple::pointi(0, 0, 1),
-            Tuple::pointi(1, 0, 0)
-        );
-        translation_test!(
-            rotate_z_half_quater,
-            Matrix::rotate_z(std::f64::consts::FRAC_PI_4),
-            Tuple::pointi(0, 1, 0),
-            Tuple::point(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
-        );
-        translation_test!(
-            rotate_z_quater,
-            Matrix::rotate_z(std::f64::consts::FRAC_PI_2),
-            Tuple::pointi(0, 1, 0),
-            Tuple::pointi(-1, 0, 0)
-        );
     }
 }
