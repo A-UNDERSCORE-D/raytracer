@@ -13,7 +13,7 @@ impl Matrix {
         Self::translation(x as f64, y as f64, z as f64)
     }
 
-    pub fn scale(x: f64, y: f64, z: f64) -> Self {
+    pub fn scaling(x: f64, y: f64, z: f64) -> Self {
         let mut base = IDENTITY_4X4.clone();
         base[(0, 0)] = x;
         base[(1, 1)] = y;
@@ -21,11 +21,11 @@ impl Matrix {
         base
     }
 
-    pub fn scalei(x: i32, y: i32, z: i32) -> Self {
-        Self::scale(x as f64, y as f64, z as f64)
+    pub fn scalingi(x: i32, y: i32, z: i32) -> Self {
+        Self::scaling(x as f64, y as f64, z as f64)
     }
 
-    pub fn rotate_x(radians: f64) -> Self {
+    pub fn rotatation_x(radians: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         let sin = radians.sin();
@@ -39,7 +39,7 @@ impl Matrix {
         out
     }
 
-    pub fn rotate_y(radians: f64) -> Self {
+    pub fn rotation_y(radians: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         let sin = radians.sin();
@@ -53,7 +53,7 @@ impl Matrix {
         out
     }
 
-    pub fn rotate_z(radians: f64) -> Self {
+    pub fn rotatation_z(radians: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         let sin = radians.sin();
@@ -67,7 +67,7 @@ impl Matrix {
         out
     }
 
-    pub fn shear(x_y: f64, x_z: f64, y_x: f64, y_z: f64, z_x: f64, z_y: f64) -> Self {
+    pub fn shearing(x_y: f64, x_z: f64, y_x: f64, y_z: f64, z_x: f64, z_y: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         out[(0, 1)] = x_y;
@@ -79,8 +79,8 @@ impl Matrix {
 
         out
     }
-    pub fn sheari(x_y: i32, x_z: i32, y_x: i32, y_z: i32, z_x: i32, z_y: i32) -> Self {
-        Self::shear(
+    pub fn shearingi(x_y: i32, x_z: i32, y_x: i32, y_z: i32, z_x: i32, z_y: i32) -> Self {
+        Self::shearing(
             x_y as f64, x_z as f64, y_x as f64, y_z as f64, z_x as f64, z_y as f64,
         )
     }
@@ -119,103 +119,103 @@ mod test {
 
     translation_test!(
         scale_simple,
-        Matrix::scalei(2, 3, 4),
+        Matrix::scalingi(2, 3, 4),
         Tuple::pointi(-4, 6, 8),
         Tuple::pointi(-8, 18, 32)
     );
 
     translation_test!(
         scale_vec,
-        Matrix::scalei(2, 3, 4),
+        Matrix::scalingi(2, 3, 4),
         Tuple::vectori(-4, 6, 8),
         Tuple::vectori(-8, 18, 32)
     );
 
     translation_test!(
         scale_reflect,
-        Matrix::scalei(-1, 1, 1),
+        Matrix::scalingi(-1, 1, 1),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(-2, 3, 4)
     );
 
     translation_test!(
         rotate_x_half_quarter,
-        Matrix::rotate_x(45_f64.to_radians()),
+        Matrix::rotatation_x(45_f64.to_radians()),
         Tuple::pointi(0, 1, 0),
         Tuple::point(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
     );
     translation_test!(
         rotate_x_quarter,
-        Matrix::rotate_x(90_f64.to_radians()),
+        Matrix::rotatation_x(90_f64.to_radians()),
         Tuple::pointi(0, 1, 0),
         Tuple::pointi(0, 0, 1)
     );
 
     translation_test!(
         rotate_x_half_quarter_inverse,
-        Matrix::rotate_x(45_f64.to_radians()).inverse().unwrap(),
+        Matrix::rotatation_x(45_f64.to_radians()).inverse().unwrap(),
         Tuple::pointi(0, 1, 0),
         Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0))
     );
 
     translation_test!(
         rotate_y_half_quater,
-        Matrix::rotate_y(std::f64::consts::FRAC_PI_4),
+        Matrix::rotation_y(std::f64::consts::FRAC_PI_4),
         Tuple::pointi(0, 0, 1),
         Tuple::point(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0)
     );
     translation_test!(
         rotate_y_quater,
-        Matrix::rotate_y(std::f64::consts::FRAC_PI_2),
+        Matrix::rotation_y(std::f64::consts::FRAC_PI_2),
         Tuple::pointi(0, 0, 1),
         Tuple::pointi(1, 0, 0)
     );
     translation_test!(
         rotate_z_half_quater,
-        Matrix::rotate_z(std::f64::consts::FRAC_PI_4),
+        Matrix::rotatation_z(std::f64::consts::FRAC_PI_4),
         Tuple::pointi(0, 1, 0),
         Tuple::point(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
     );
     translation_test!(
         rotate_z_quater,
-        Matrix::rotate_z(std::f64::consts::FRAC_PI_2),
+        Matrix::rotatation_z(std::f64::consts::FRAC_PI_2),
         Tuple::pointi(0, 1, 0),
         Tuple::pointi(-1, 0, 0)
     );
 
     translation_test!(
         sheari_x_y,
-        Matrix::sheari(1, 0, 0, 0, 0, 0),
+        Matrix::shearingi(1, 0, 0, 0, 0, 0),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(5, 3, 4)
     );
     translation_test!(
         sheari_x_z,
-        Matrix::sheari(0, 1, 0, 0, 0, 0),
+        Matrix::shearingi(0, 1, 0, 0, 0, 0),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(6, 3, 4)
     );
     translation_test!(
         sheari_y_x,
-        Matrix::sheari(0, 0, 1, 0, 0, 0),
+        Matrix::shearingi(0, 0, 1, 0, 0, 0),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(2, 5, 4)
     );
     translation_test!(
         sheari_y_z,
-        Matrix::sheari(0, 0, 0, 1, 0, 0),
+        Matrix::shearingi(0, 0, 0, 1, 0, 0),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(2, 7, 4)
     );
     translation_test!(
         sheari_z_x,
-        Matrix::sheari(0, 0, 0, 0, 1, 0),
+        Matrix::shearingi(0, 0, 0, 0, 1, 0),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(2, 3, 6)
     );
     translation_test!(
         sheari_z_y,
-        Matrix::sheari(0, 0, 0, 0, 0, 1),
+        Matrix::shearingi(0, 0, 0, 0, 0, 1),
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(2, 3, 7)
     );
