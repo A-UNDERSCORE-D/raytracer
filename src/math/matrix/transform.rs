@@ -25,7 +25,7 @@ impl Matrix {
         Self::scaling(x as f64, y as f64, z as f64)
     }
 
-    pub fn rotatation_x(radians: f64) -> Self {
+    pub fn rotation_x(radians: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         let sin = radians.sin();
@@ -86,10 +86,32 @@ impl Matrix {
     }
 }
 
+impl Matrix {
+    pub fn translate(self, x: f64, y: f64, z: f64) -> Self {
+        Self::translation(x, y, z) * self
+    }
+
+    pub fn scale(self, x: f64, y: f64, z: f64) -> Self {
+        Self::scaling(x, y, z) * self
+    }
+    pub fn rotate_x(self, radians: f64) -> Self {
+        Self::rotation_x(radians) * self
+    }
+
+    pub fn rotate_y(self, radians: f64) -> Self {
+        Self::rotation_y(radians) * self
+    }
+
+    pub fn rotate_z(self, radians: f64) -> Self {
+        Self::rotatation_z(radians) * self
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::math::tuple::Tuple;
+    use std::f64::consts::FRAC_PI_2;
 
     macro_rules! translation_test {
         ($name:ident, $matrix:expr, $tuple:expr, $expected:expr) => {
@@ -140,20 +162,20 @@ mod test {
 
     translation_test!(
         rotate_x_half_quarter,
-        Matrix::rotatation_x(45_f64.to_radians()),
+        Matrix::rotation_x(45_f64.to_radians()),
         Tuple::pointi(0, 1, 0),
         Tuple::point(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
     );
     translation_test!(
         rotate_x_quarter,
-        Matrix::rotatation_x(90_f64.to_radians()),
+        Matrix::rotation_x(90_f64.to_radians()),
         Tuple::pointi(0, 1, 0),
         Tuple::pointi(0, 0, 1)
     );
 
     translation_test!(
         rotate_x_half_quarter_inverse,
-        Matrix::rotatation_x(45_f64.to_radians()).inverse().unwrap(),
+        Matrix::rotation_x(45_f64.to_radians()).inverse().unwrap(),
         Tuple::pointi(0, 1, 0),
         Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0))
     );
@@ -219,4 +241,40 @@ mod test {
         Tuple::pointi(2, 3, 4),
         Tuple::pointi(2, 3, 7)
     );
+
+    #[test]
+    fn chained_transforms() {
+        let start = Tuple::pointi(1, 0, 1);
+
+        let rotx = &Matrix::rotation_x(FRAC_PI_2);
+        let scale = &Matrix::scalingi(5, 5, 5);
+        let trans = &Matrix::translationi(10, 5, 7);
+
+        let rotated = rotx * start;
+        let scaled = scale * rotated;
+        let translated = trans * scaled;
+
+        assert_eq!(rotated, Tuple::pointi(1, -1, 0), "rotation not as expected");
+        assert_eq!(scaled, Tuple::pointi(5, -5, 0), "scale not as expected");
+        assert_eq!(
+            translated,
+            Tuple::pointi(15, 0, 7),
+            "translation not as expected"
+        );
+
+        let chained = trans * scale * rotx;
+        assert_eq!(
+            chained * start,
+            translated,
+            "Chained did not result in the same result"
+        );
+
+        let fluent = IDENTITY_4X4
+            .clone()
+            .rotate_x(FRAC_PI_2)
+            .scale(5.0, 5.0, 5.0)
+            .translate(10.0, 5.0, 7.0);
+
+        assert_eq!(fluent * start, translated);
+    }
 }
