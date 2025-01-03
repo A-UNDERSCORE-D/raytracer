@@ -75,6 +75,7 @@ impl PartialEq for Colour {
 impl Colour {
     pub const RED: Colour = Colour::newi(255, 0, 0);
     pub const BLACK: Colour = Colour::newi(0, 0, 0);
+    pub const WHITE: Colour = Colour::newi(255, 255, 255);
 }
 
 #[cfg(test)]

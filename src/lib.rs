@@ -1,4 +1,5 @@
 pub mod canvas;
 pub mod colour;
 pub mod math;
-pub mod ppm;
+pub mod ray;
+pub mod shape;
