@@ -3,6 +3,8 @@ use crate::{
     ray::{Intersection, Ray, RayIntersect},
 };
 
+use super::Shape;
+
 pub struct Sphere {
     _id: usize,
 }
@@ -41,6 +43,8 @@ impl RayIntersect for Sphere {
         ])
     }
 }
+
+impl Shape for Sphere {}
 
 #[cfg(test)]
 mod test {
