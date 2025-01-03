@@ -196,6 +196,26 @@ impl Mul for Matrix {
     }
 }
 
+impl Mul<&Matrix> for Matrix {
+    type Output = Self;
+    fn mul(self, rhs: &Self) -> Self::Output {
+        assert_eq!(self.height, rhs.height);
+        assert_eq!(self.width, rhs.width);
+        let mut data = vec![0.0; self.height * self.width];
+
+        for col in 0..self.width {
+            for row in 0..self.height {
+                data[col + (self.width * row)] = self
+                    .row(row)
+                    .iter()
+                    .zip(rhs.col(col).iter())
+                    .map(|(&l, &r)| l * r)
+                    .sum();
+            }
+        }
+        Matrix::new_with_data(self.width, self.height, data)
+    }
+}
 impl Mul for &Matrix {
     type Output = Matrix;
     fn mul(self, rhs: Self) -> Self::Output {
@@ -230,6 +250,18 @@ impl Mul<Tuple> for Matrix {
     }
 }
 
+impl Mul<Tuple> for &Matrix {
+    type Output = Tuple;
+    fn mul(self, rhs: Tuple) -> Self::Output {
+        assert_eq!(self.height, 4, "Cannot multiply a non 4* matrix by a tuple");
+        Tuple {
+            x: rhs.dot(&self.row(0).into()),
+            y: rhs.dot(&self.row(1).into()),
+            z: rhs.dot(&self.row(2).into()),
+            w: rhs.dot(&self.row(3).into()),
+        }
+    }
+}
 impl PartialEq for Matrix {
     fn eq(&self, other: &Self) -> bool {
         self.width == other.width
