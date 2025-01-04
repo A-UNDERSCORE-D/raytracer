@@ -1,4 +1,3 @@
-
 use crate::math::tuple::Tuple;
 
 pub struct Ray {
