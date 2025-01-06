@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::{
     math::tuple::Tuple,
     ray::{Intersection, Ray, RayIntersect},
@@ -5,20 +7,17 @@ use crate::{
 
 use super::Shape;
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Sphere {
-    _id: usize,
+    _id: Uuid,
 }
-
-static mut ID: usize = 0;
 
 #[allow(clippy::new_without_default)] // more stuff soon (tm)
 impl Sphere {
     pub fn new() -> Self {
+        //uuid
         Sphere {
-            _id: unsafe {
-                ID += 1;
-                ID
-            },
+            _id: Uuid::new_v4(),
         }
     }
 }
@@ -44,7 +43,11 @@ impl RayIntersect for Sphere {
     }
 }
 
-impl Shape for Sphere {}
+impl Shape for Sphere {
+    fn id(&self) -> Uuid {
+        self._id
+    }
+}
 
 #[cfg(test)]
 mod test {
