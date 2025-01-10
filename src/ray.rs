@@ -1,4 +1,7 @@
-use crate::{math::tuple::Tuple, shape::Shape};
+use crate::{
+    math::{matrix::Matrix, tuple::Tuple},
+    shape::Shape,
+};
 
 pub struct Ray {
     pub origin: Tuple,
@@ -17,6 +20,10 @@ impl Ray {
 impl Ray {
     pub fn position(&self, dst: f64) -> Tuple {
         self.origin + (self.direction * dst)
+    }
+
+    pub fn transform(&self, matrix: &Matrix) -> Self {
+        Self::new(matrix * self.origin, matrix * self.direction)
     }
 }
 
@@ -58,9 +65,16 @@ impl IntersectVec for Vec<Intersection<'_>> {
 
 #[cfg(test)]
 mod test {
-    use crate::{math::tuple::Tuple, ray::IntersectVec, shape::sphere::Sphere};
+    use crate::{
+        math::{
+            matrix::Matrix,
+            tuple::{Tuple},
+        },
+        ray::IntersectVec,
+        shape::sphere::Sphere,
+    };
 
-    use super::{Intersection, Ray, RayIntersect};
+    use super::{Intersection, Ray};
 
     #[test]
     fn position() {
@@ -104,6 +118,7 @@ mod test {
 
         assert_eq!(xs.hit(), None)
     }
+
     #[test]
     fn hit_2() {
         let s = Sphere::new();
@@ -115,5 +130,26 @@ mod test {
         let xs = vec![i1, i2, i3, i4];
 
         assert_eq!(xs.hit().expect("should exist"), i4)
+    }
+
+    #[test]
+    fn translate() {
+        let r = Ray::new(Tuple::pointi(1, 2, 3), Tuple::vectori(0, 1, 0));
+        let m = &Matrix::translationi(3, 4, 5);
+
+        let res = r.transform(m);
+
+        assert_eq!(res.origin, Tuple::pointi(4, 6, 8));
+        assert_eq!(res.direction, Tuple::vectori(0, 1, 0));
+    }
+    #[test]
+    fn scale() {
+        let r = Ray::new(Tuple::pointi(1, 2, 3), Tuple::vectori(0, 1, 0));
+        let m = &Matrix::scalingi(2, 3, 4);
+
+        let res = r.transform(m);
+
+        assert_eq!(res.origin, Tuple::pointi(2, 6, 12));
+        assert_eq!(res.direction, Tuple::vectori(0, 3, 0));
     }
 }
