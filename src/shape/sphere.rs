@@ -3,7 +3,7 @@ use uuid::Uuid;
 use crate::{
     math::{
         matrix::{Matrix, IDENTITY_4X4},
-        tuple::Tuple,
+        tuple::{Tuple, ZERO},
     },
     ray::{Intersection, Ray, RayIntersect},
 };
@@ -66,13 +66,31 @@ impl Shape for Sphere {
     fn set_transform(&mut self, transform: Matrix) {
         self.transform = transform
     }
+
+    fn normal_at(&self, point: Tuple) -> Tuple {
+        let inverted = &self
+            .transform
+            .inverse()
+            .expect("Non-invertable shape matrix");
+        let object_point = inverted * point;
+        let object_normal = object_point - ZERO;
+        let mut world_normal = inverted.transpose() * object_normal;
+
+        world_normal.w = 0.0; // Just force this to be 0 to ensure it behaves
+        world_normal.normalize()
+    }
 }
 
 #[cfg(test)]
 mod test {
 
+    use std::f64::consts::{PI, SQRT_2};
+
     use crate::{
-        math::{matrix::Matrix, matrix::IDENTITY_4X4, tuple::Tuple},
+        math::{
+            matrix::{Matrix, IDENTITY_4X4},
+            tuple::Tuple,
+        },
         ray::{Ray, RayIntersect},
         shape::Shape,
     };
@@ -87,6 +105,68 @@ mod test {
 
         assert_eq!(s.transform, Matrix::translationi(1, 2, 3));
     }
+
+    macro_rules! normal_at {
+        ($name:ident, $inp:expr, $out:expr) => {
+            normal_at!($name, IDENTITY_4X4.clone(), $inp, $out);
+        };
+        ($name:ident, $transform:expr, $inp:expr, $out:expr) => {
+            #[test]
+            fn $name() {
+                let s = Sphere::new_with_transform($transform);
+                let n = s.normal_at($inp);
+
+                assert!(n.is_vector());
+                assert_eq!(n, $out);
+                assert_eq!(n, n.normalize());
+            }
+        };
+    }
+
+    normal_at!(
+        normal_point_x,
+        Tuple::pointi(1, 0, 0),
+        Tuple::vectori(1, 0, 0)
+    );
+
+    normal_at!(
+        normal_point_y,
+        Tuple::pointi(0, 1, 0),
+        Tuple::vectori(0, 1, 0)
+    );
+
+    normal_at!(
+        normal_point_z,
+        Tuple::pointi(0, 0, 1),
+        Tuple::vectori(0, 0, 1)
+    );
+
+    normal_at!(
+        normal_point_nonaxial,
+        Tuple::point(
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0
+        ),
+        Tuple::vector(
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0
+        )
+    );
+
+    normal_at!(
+        translated,
+        Matrix::translation(0.0, 1.0, 0.0),
+        Tuple::point(0.0, 1.70711, -0.70711),
+        Tuple::vector(0.0, 0.70711, -0.70711)
+    );
+    normal_at!(
+        transformed,
+        Matrix::scaling(1.0, 0.5, 1.0) * Matrix::rotatation_z(PI / 5.0),
+        Tuple::point(0.0, SQRT_2 / 2.0, -SQRT_2 / 2.0),
+        Tuple::vector(0.0, 0.97014, -0.24254)
+    );
 
     mod intersect {
         use super::*;
