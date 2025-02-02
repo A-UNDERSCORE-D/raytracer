@@ -1,8 +1,7 @@
-use std::f32::consts::FRAC_1_SQRT_2;
 
 use crate::{
-    colour::{self, Colour},
-    lights::{Light, PointLight},
+    colour::{Colour},
+    lights::Light,
     math::tuple::Tuple,
 };
 
