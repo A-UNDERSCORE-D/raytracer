@@ -1,3 +1,4 @@
+use core::f64;
 use std::ops::{Add, Mul, Neg, Sub};
 
 use super::{float::equal, matrix};
@@ -9,6 +10,9 @@ pub const ZERO: Tuple = Tuple {
     w: 0.0,
 };
 
+pub const ZERO_VEC: Tuple = ZERO;
+pub const ZERO_POINT: Tuple = Tuple::pointi(0, 0, 0);
+
 #[derive(Debug, Clone, Copy)]
 pub struct Tuple {
     pub x: f64,
@@ -19,19 +23,34 @@ pub struct Tuple {
 
 /// Constructors
 impl Tuple {
-    pub fn vector(x: f64, y: f64, z: f64) -> Tuple {
+    pub const fn vector(x: f64, y: f64, z: f64) -> Tuple {
         Self { x, y, z, w: 0.0 }
     }
-    pub fn vectori(x: i32, y: i32, z: i32) -> Tuple {
+    pub const fn vectori(x: i32, y: i32, z: i32) -> Tuple {
         Self::vector(x as f64, y as f64, z as f64)
     }
 
-    pub fn point(x: f64, y: f64, z: f64) -> Tuple {
+    pub const fn point(x: f64, y: f64, z: f64) -> Tuple {
         Self { x, y, z, w: 1.0 }
     }
-    pub fn pointi(x: i32, y: i32, z: i32) -> Tuple {
+    pub const fn pointi(x: i32, y: i32, z: i32) -> Tuple {
         Self::point(x as f64, y as f64, z as f64)
     }
+}
+
+// Make some nice wrapper constructors
+
+pub const fn vector(x: f64, y: f64, z: f64) -> Tuple {
+    Tuple::vector(x, y, z)
+}
+pub const fn vectori(x: i32, y: i32, z: i32) -> Tuple {
+    Tuple::vectori(x, y, z)
+}
+pub const fn point(x: f64, y: f64, z: f64) -> Tuple {
+    Tuple::point(x, y, z)
+}
+pub const fn pointi(x: i32, y: i32, z: i32) -> Tuple {
+    Tuple::pointi(x, y, z)
 }
 
 /// actual methods
@@ -72,6 +91,10 @@ impl Tuple {
             self.z * other.x - self.x * other.z,
             self.x * other.y - self.y * other.x,
         )
+    }
+
+    pub fn reflect(&self, normal: &Self) -> Tuple {
+        *self - *normal * 2 * self.dot(normal)
     }
 }
 
@@ -192,8 +215,8 @@ mod tests {
         assert!(a + b == expected)
     }
 
-    #[test]
     /// Subtract points from eachother getting the vector between them
+    #[test]
     fn test_sub() {
         let a = Tuple::point(3.0, 2.0, 1.0);
         let b = Tuple::point(5.0, 6.0, 7.0);
@@ -339,5 +362,37 @@ mod tests {
 
         assert_eq!(Tuple::cross(&a, &b), Tuple::vectori(-1, 2, -1));
         assert_eq!(Tuple::cross(&b, &a), Tuple::vectori(1, -2, 1))
+    }
+
+    mod reflect {
+        use std::f64::consts::SQRT_2;
+
+        use super::*;
+        macro_rules! reflect {
+            ($name:ident, $input:expr, $arg:expr, $expected:expr) => {
+                #[test]
+                fn $name() {
+                    let v = $input;
+                    let res = v.reflect(&$arg);
+
+                    assert!(v.is_vector());
+
+                    assert_eq!(res, $expected)
+                }
+            };
+        }
+
+        reflect!(
+            normal,
+            Tuple::vectori(1, -1, 0),
+            Tuple::vectori(0, 1, 0),
+            Tuple::vectori(1, 1, 0)
+        );
+        reflect!(
+            sloped,
+            Tuple::vectori(0, -1, 0),
+            Tuple::vector(SQRT_2 / 2.0, SQRT_2 / 2.0, 0.0),
+            Tuple::vectori(1, 0, 0)
+        );
     }
 }
