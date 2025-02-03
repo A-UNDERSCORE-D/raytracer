@@ -1,10 +1,13 @@
+use std::fmt::Debug;
+
 use crate::{colour::Colour, math::tuple::Tuple};
 
-pub trait Light {
+pub trait Light: Debug {
     fn intensity(&self) -> &Colour;
     fn position(&self) -> &Tuple;
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct PointLight {
     pub intensity: Colour,
     pub position: Tuple,

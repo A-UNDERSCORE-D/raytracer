@@ -1,12 +1,13 @@
 use uuid::Uuid;
 
 use crate::{
+    intersection::Intersection,
     materials::Material,
     math::{
         matrix::{Matrix, IDENTITY_4X4},
         tuple::{Tuple, ZERO},
     },
-    ray::{Intersection, Ray, RayIntersect},
+    ray::{Ray, RayIntersect},
 };
 
 use super::Shape;
@@ -30,6 +31,14 @@ impl Sphere {
             _id: Uuid::new_v4(),
             transform,
             material: Material::default(),
+        }
+    }
+
+    pub fn new_with_material(material: Material) -> Self {
+        Self {
+            _id: Uuid::new_v4(),
+            transform: IDENTITY_4X4.clone(),
+            material,
         }
     }
 }
@@ -81,6 +90,14 @@ impl Shape for Sphere {
 
         world_normal.w = 0.0; // Just force this to be 0 to ensure it behaves
         world_normal.normalize()
+    }
+
+    fn material(&self) -> &Material {
+        &self.material
+    }
+
+    fn transform(&self) -> &Matrix {
+        &self.transform
     }
 }
 
