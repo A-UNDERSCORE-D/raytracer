@@ -38,7 +38,7 @@ impl<'a> Intersection<'a> {
 }
 
 impl<'a> Intersection<'a> {
-    pub fn new<T: Shape + 'a>(t: f64, object: &'a T) -> Self {
+    pub fn new(t: f64, object: &'a dyn Shape) -> Self {
         Self { t, object }
     }
 }
@@ -70,7 +70,7 @@ mod test {
     use super::*;
     #[test]
     fn hit() {
-        let s = Sphere::new();
+        let s = Sphere::default();
         let i1 = Intersection::new(1.0, &s);
         let i2 = Intersection::new(2.0, &s);
 
@@ -81,7 +81,7 @@ mod test {
 
     #[test]
     fn hit_between() {
-        let s = Sphere::new();
+        let s = Sphere::default();
         let i1 = Intersection::new(-1.0, &s);
         let i2 = Intersection::new(1.0, &s);
 
@@ -91,7 +91,7 @@ mod test {
     }
     #[test]
     fn hit_behind() {
-        let s = Sphere::new();
+        let s = Sphere::default();
         let i1 = Intersection::new(-2.0, &s);
         let i2 = Intersection::new(-1.0, &s);
 
@@ -102,7 +102,7 @@ mod test {
 
     #[test]
     fn hit_2() {
-        let s = Sphere::new();
+        let s = Sphere::default();
         let i1 = Intersection::new(5.0, &s);
         let i2 = Intersection::new(7.0, &s);
         let i3 = Intersection::new(-1.0, &s);
@@ -121,7 +121,7 @@ mod test {
         #[test]
         fn precompute() {
             let r = Ray::new(pointi(0, 0, -5), vectori(0, 0, 1));
-            let shape = Sphere::new();
+            let shape = Sphere::default();
             let intersection = Intersection::new(4.0, &shape);
 
             let comps = intersection.prepare_computations(r);
@@ -136,7 +136,7 @@ mod test {
         #[test]
         fn precompute_outside() {
             let ray = Ray::new(pointi(0, 0, -5), vectori(0, 0, 1));
-            let s = &Sphere::new();
+            let s = &Sphere::default();
             let i = Intersection::new(4.0, s);
 
             let comps = i.prepare_computations(ray);
@@ -147,7 +147,7 @@ mod test {
         #[test]
         fn precompute_inside() {
             let ray = Ray::new(pointi(0, 0, 0), vectori(0, 0, 1));
-            let s = &Sphere::new();
+            let s = &Sphere::default();
             let i = Intersection::new(1.0, s);
 
             let comps = i.prepare_computations(ray);

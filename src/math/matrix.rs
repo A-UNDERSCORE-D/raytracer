@@ -274,8 +274,6 @@ impl PartialEq for Matrix {
     }
 }
 
-// TODO: Probably useful, From for Colour and Tuple
-
 macro_rules! indexer {
     ($typ:ty, $self:ident, $index:ident, $impl:expr) => {
         impl Index<$typ> for Matrix {
@@ -291,6 +289,12 @@ macro_rules! indexer {
             }
         }
     };
+}
+
+impl Default for Matrix {
+    fn default() -> Self {
+        IDENTITY_4X4.clone()
+    }
 }
 
 indexer!(

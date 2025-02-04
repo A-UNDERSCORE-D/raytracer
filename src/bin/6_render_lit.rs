@@ -42,7 +42,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
                 let normal = first.object.normal_at(point);
                 let eye = -ray.direction;
                 canvas[(row_p, col_p)] =
-                    first.object.material().lighting(light, point, eye, normal);
+                    first.object.material().lighting(&light, point, eye, normal);
             }
         }
     }

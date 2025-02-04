@@ -21,25 +21,27 @@ pub struct Sphere {
 
 #[allow(clippy::new_without_default)]
 impl Sphere {
-    pub fn new() -> Self {
+    pub fn new(transform: Matrix, material: Material) -> Self {
         //uuid
-        Self::new_with_transform(IDENTITY_4X4.clone())
-    }
-
-    pub fn new_with_transform(transform: Matrix) -> Self {
         Self {
             _id: Uuid::new_v4(),
             transform,
-            material: Material::default(),
+            material,
         }
     }
 
+    pub fn new_with_transform(transform: Matrix) -> Self {
+        Self::new(transform, Default::default())
+    }
+
     pub fn new_with_material(material: Material) -> Self {
-        Self {
-            _id: Uuid::new_v4(),
-            transform: IDENTITY_4X4.clone(),
-            material,
-        }
+        Self::new(Default::default(), material)
+    }
+}
+
+impl Default for Sphere {
+    fn default() -> Self {
+        Self::new(Default::default(), Default::default())
     }
 }
 
@@ -119,7 +121,7 @@ mod test {
 
     #[test]
     fn set_transform() {
-        let mut s = Sphere::new();
+        let mut s = Sphere::default();
         assert_eq!(s.transform, IDENTITY_4X4.clone());
         s.set_transform(Matrix::translationi(1, 2, 3));
 
@@ -196,7 +198,7 @@ mod test {
         #[test]
         fn two_points() {
             let r = Ray::new(Tuple::pointi(0, 0, -5), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new();
+            let s = Sphere::default();
 
             let xs = s.intersect(r).unwrap();
 
@@ -208,7 +210,7 @@ mod test {
         #[test]
         fn tangent() {
             let r = Ray::new(Tuple::pointi(0, 1, -5), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new();
+            let s = Sphere::default();
 
             let xs = s.intersect(r).unwrap();
 
@@ -220,7 +222,7 @@ mod test {
         #[test]
         fn none() {
             let r = Ray::new(Tuple::pointi(0, 2, -5), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new();
+            let s = Sphere::default();
 
             let xs = s.intersect(r);
             assert!(xs.is_none());
@@ -229,7 +231,7 @@ mod test {
         #[test]
         fn center() {
             let r = Ray::new(Tuple::pointi(0, 0, 0), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new();
+            let s = Sphere::default();
 
             let xs = s.intersect(r).unwrap();
 
@@ -241,7 +243,7 @@ mod test {
         #[test]
         fn behind() {
             let r = Ray::new(Tuple::pointi(0, 0, 5), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new();
+            let s = Sphere::default();
 
             let xs = s.intersect(r).unwrap();
 

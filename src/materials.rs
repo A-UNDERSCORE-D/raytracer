@@ -24,7 +24,7 @@ impl Default for Material {
 impl Material {
     pub fn lighting(
         &self,
-        light: impl Light,
+        light: &dyn Light,
         point: Tuple,
         eye_vec: Tuple,
         normal_vec: Tuple,
@@ -90,7 +90,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, -10));
 
-            let res = m.lighting(light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec);
             assert_eq!(res, Colour::new(1.9, 1.9, 1.9))
         }
         #[test]
@@ -100,7 +100,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, -10));
 
-            let res = m.lighting(light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec);
             assert_eq!(res, Colour::new(1.0, 1.0, 1.0))
         }
 
@@ -111,7 +111,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 10, -10));
 
-            let res = m.lighting(light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec);
             assert_eq!(res, Colour::new(0.7364, 0.7364, 0.7364))
         }
 
@@ -122,7 +122,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 10, -10));
 
-            let res = m.lighting(light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec);
             assert_eq!(res, Colour::new(1.6364, 1.6364, 1.6364))
         }
 
@@ -133,7 +133,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, 10));
 
-            let res = m.lighting(light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec);
             assert_eq!(res, Colour::new(0.1, 0.1, 0.1))
         }
     }
