@@ -1,3 +1,5 @@
+use crate::math::tuple::Tuple;
+
 use super::Matrix;
 use super::IDENTITY_4X4;
 impl Matrix {
@@ -83,6 +85,26 @@ impl Matrix {
         Self::shearing(
             x_y as f64, x_z as f64, y_x as f64, y_z as f64, z_x as f64, z_y as f64,
         )
+    }
+
+    pub fn view_transform(from: Tuple, to: Tuple, up: Tuple) -> Self {
+        assert!(from.is_point());
+        assert!(to.is_point());
+        assert!(up.is_vector());
+
+        let forward = (to - from).normalize();
+        let left = forward.cross(&up.normalize());
+        let true_up = left.cross(&forward);
+
+        #[rustfmt::skip]
+        let data = vec![
+            left.x,      left.y,     left.z,    0.0,
+            true_up.x,   true_up.y,  true_up.z, 0.0,
+            -forward.x, -forward.y, -forward.z, 0.0,
+            0.0,         0.0,        0.0,       1.0,
+        ];
+
+        Matrix::new_with_data(4, 4, data) * Matrix::translation(-from.x, -from.y, -from.z)
     }
 }
 
@@ -276,5 +298,66 @@ mod test {
             .translate(10.0, 5.0, 7.0);
 
         assert_eq!(fluent * start, translated);
+    }
+
+    mod view_transform {
+        use crate::math::tuple::{point, pointi, vectori};
+
+        use super::*;
+        #[test]
+        fn identity() {
+            let from = pointi(0, 0, 0);
+            let to = pointi(0, 0, -1);
+            let up = vectori(0, 1, 0);
+
+            let t = Matrix::view_transform(from, to, up);
+
+            assert_eq!(t, *IDENTITY_4X4);
+        }
+
+        #[test]
+        fn poz_z() {
+            let from = pointi(0, 0, 0);
+            let to = pointi(0, 0, 1);
+            let up = vectori(0, 1, 0);
+
+            let t = Matrix::view_transform(from, to, up);
+
+            assert_eq!(t, Matrix::scalingi(-1, 1, -1));
+        }
+
+        #[test]
+        fn move_the_world() {
+            let from = pointi(0, 0, 8);
+            let to = pointi(0, 0, 0);
+            let up = vectori(0, 1, 0);
+
+            let t = Matrix::view_transform(from, to, up);
+
+            // -8 because the real result is that everything in the world is transformed by this matrix.
+            assert_eq!(t, Matrix::translationi(0, 0, -8));
+        }
+
+        #[test]
+        fn arbitrary() {
+            let from = pointi(1, 3, 2);
+            let to = pointi(4, -2, 8);
+            let up = vectori(1, 1, 0);
+
+            let t = Matrix::view_transform(from, to, up);
+            #[rustfmt::skip]
+            let expected = Matrix::new_with_data(
+                4,
+                4,
+                vec![
+                    -0.50709, 0.50709,  0.67612, -2.36643,
+                     0.76772, 0.60609,  0.12122, -2.82843,
+                    -0.35857, 0.59761, -0.71714,  0.0,
+                     0.0,     0.0,      0.0,      1.0,
+                ],
+            );
+
+            assert_eq!(t, expected);
+        }
     }
 }
