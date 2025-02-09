@@ -4,7 +4,7 @@ use crate::{
     intersection::Intersection,
     materials::Material,
     math::{
-        matrix::{Matrix, IDENTITY_4X4},
+        matrix::Matrix,
         tuple::{Tuple, ZERO},
     },
     ray::{Ray, RayIntersect},
@@ -77,9 +77,10 @@ impl Shape for Sphere {
         self._id
     }
 
-    fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform
-    }
+    // Was a thing, isnt anymore.
+    // fn set_transform(&mut self, transform: Matrix) {
+    //     self.transform = transform
+    // }
 
     fn normal_at(&self, point: Tuple) -> Tuple {
         let inverted = &self
@@ -119,14 +120,14 @@ mod test {
 
     use super::Sphere;
 
-    #[test]
-    fn set_transform() {
-        let mut s = Sphere::default();
-        assert_eq!(s.transform, IDENTITY_4X4.clone());
-        s.set_transform(Matrix::translationi(1, 2, 3));
+    // #[test]
+    // fn set_transform() {
+    //     let mut s = Sphere::default();
+    //     assert_eq!(s.transform, IDENTITY_4X4.clone());
+    //     s.set_transform(Matrix::translationi(1, 2, 3));
 
-        assert_eq!(s.transform, Matrix::translationi(1, 2, 3));
-    }
+    //     assert_eq!(s.transform, Matrix::translationi(1, 2, 3));
+    // }
 
     mod normal {
         use super::*;

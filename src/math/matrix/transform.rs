@@ -301,7 +301,7 @@ mod test {
     }
 
     mod view_transform {
-        use crate::math::tuple::{point, pointi, vectori};
+        use crate::math::tuple::{pointi, vectori};
 
         use super::*;
         #[test]

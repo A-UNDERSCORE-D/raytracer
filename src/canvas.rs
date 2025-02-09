@@ -104,6 +104,12 @@ mod test {
         let c = Canvas::new(5, 5);
         assert!(c.vec().iter().all(|v| *v == Colour::default()));
     }
+    #[test]
+    fn index_correct() {
+        let c = Canvas::new(100, 50);
+
+        assert_eq!(c[(90, 49)], Colour::default())
+    }
 
     #[test]
     fn iter() {

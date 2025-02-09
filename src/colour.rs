@@ -74,6 +74,8 @@ impl PartialEq for Colour {
 /// Namespaced colour defaults for ease of use
 impl Colour {
     pub const RED: Colour = Colour::newi(1, 0, 0);
+    pub const GREEN: Colour = Colour::newi(0, 1, 0);
+    pub const BLUE: Colour = Colour::newi(0, 0, 1);
     pub const BLACK: Colour = Colour::newi(0, 0, 0);
     pub const WHITE: Colour = Colour::newi(1, 1, 1);
 }

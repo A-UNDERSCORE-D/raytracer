@@ -14,6 +14,12 @@ pub struct World {
     pub light: Vec<Box<dyn Light>>,
 }
 
+// SAFETY: Safe because we only ever read from Shape and Light after construct.
+// This does however imply that Shape and Light are always safe to read from using their methods.
+// we can be "sure" of this because Shape and Light dont have Mut references.
+unsafe impl Send for World {}
+unsafe impl Sync for World {}
+
 impl World {
     pub fn intersect_world(&self, ray: Ray) -> Vec<Intersection> {
         let mut xs: Vec<_> = self
