@@ -47,6 +47,15 @@ impl Colour {
             (self.blue * MAX_NUM).round().clamp(0.0, MAX_NUM) as u64,
         )
     }
+
+    pub fn to_binary_ppm(&self) -> [u8; 3] {
+        const MAX_NUM: f64 = 256.0;
+        [
+            (self.red * MAX_NUM).round().clamp(0.0, MAX_NUM) as u8,
+            (self.green * MAX_NUM).round().clamp(0.0, MAX_NUM) as u8,
+            (self.blue * MAX_NUM).round().clamp(0.0, MAX_NUM) as u8,
+        ]
+    }
 }
 
 impl Mul<f64> for Colour {

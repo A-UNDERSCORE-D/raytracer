@@ -1,4 +1,7 @@
-use std::ops::{Index, IndexMut};
+use std::{
+    io::Read,
+    ops::{Index, IndexMut},
+};
 
 use crate::colour::Colour;
 
@@ -77,6 +80,17 @@ impl Canvas {
         }
         out.pop(); // Drop trailing space
         out
+    }
+
+    pub fn into_ppm_binary(&self) -> Vec<u8> {
+        let header = format!("P6 {} {} 255\n", self.width, self.height)
+            .as_bytes()
+            .to_owned();
+
+        header
+            .into_iter()
+            .chain(self.data.iter().flat_map(Colour::to_binary_ppm))
+            .collect()
     }
 }
 

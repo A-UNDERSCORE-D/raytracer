@@ -33,6 +33,7 @@ fn main() {
     let res = camera.render_parallel(world);
 
     fs::write("out/7_world_sync.ppm", res.into_ppm()).unwrap();
+    fs::write("out/7_world_sync_BINARY.ppm", res.into_ppm_binary()).unwrap();
 }
 
 fn make_scene() -> World {
