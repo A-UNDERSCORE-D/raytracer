@@ -1,4 +1,8 @@
-use crate::{math::tuple::Tuple, ray::Ray, shape::Shape};
+use crate::{
+    math::{float::EPSILON, tuple::Tuple},
+    ray::Ray,
+    shape::Shape,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Intersection<'a> {
@@ -10,6 +14,7 @@ pub struct IntersectionComputions<'a> {
     pub object: &'a dyn Shape,
     pub t: f64,
     pub point: Tuple,
+    pub over_point: Tuple,
     pub eye_vector: Tuple,
     pub normal_vector: Tuple,
     pub inside: bool,
@@ -22,16 +27,19 @@ impl<'a> Intersection<'a> {
         let eye_vector = -ray.direction;
         let inside = normal_vector.dot(&eye_vector) < 0.0;
 
+        let normal_vector = if inside {
+            -normal_vector
+        } else {
+            normal_vector
+        };
+
         IntersectionComputions {
             object: self.object,
             t: self.t,
             point,
+            over_point: point + normal_vector * EPSILON,
             eye_vector,
-            normal_vector: if inside {
-                -normal_vector
-            } else {
-                normal_vector
-            },
+            normal_vector,
             inside,
         }
     }
@@ -114,7 +122,11 @@ mod test {
     }
 
     mod computations {
-        use crate::math::tuple::{pointi, vectori};
+        use crate::math::{
+            float::EPSILON,
+            matrix::Matrix,
+            tuple::{pointi, vectori},
+        };
 
         use super::*;
 
@@ -156,6 +168,18 @@ mod test {
             assert_eq!(comps.eye_vector, vectori(0, 0, -1));
             assert_eq!(comps.normal_vector, vectori(0, 0, -1)); // inverted you say?
             assert!(comps.inside);
+        }
+
+        #[test]
+        fn precompute_offset_point() {
+            let ray = Ray::new(pointi(0, 0, -5), vectori(0, 0, 1));
+            let shape = Sphere::new_with_transform(Matrix::translationi(0, 0, 1));
+            let i = Intersection::new(5.0, &shape);
+
+            let comps = i.prepare_computations(ray);
+
+            assert!(comps.over_point.z < -EPSILON / 2.0);
+            assert!(comps.point.z > comps.over_point.z);
         }
     }
 }

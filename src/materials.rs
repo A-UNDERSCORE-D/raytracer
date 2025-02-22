@@ -28,6 +28,7 @@ impl Material {
         point: Tuple,
         eye_vec: Tuple,
         normal_vec: Tuple,
+        shadowed: bool,
     ) -> Colour {
         let diffuse: Colour;
         let specular: Colour;
@@ -37,7 +38,7 @@ impl Material {
         let ambient_light = effective_colour * self.ambient;
 
         let light_dot_normal = light_vec.dot(&normal_vec);
-        if light_dot_normal < 0.0 {
+        if light_dot_normal < 0.0 || shadowed {
             // Fast path, object (point) is between light and surface
             diffuse = Colour::BLACK;
             specular = Colour::BLACK;
@@ -90,7 +91,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, -10));
 
-            let res = m.lighting(&light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec, false);
             assert_eq!(res, Colour::new(1.9, 1.9, 1.9))
         }
         #[test]
@@ -100,7 +101,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, -10));
 
-            let res = m.lighting(&light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec, false);
             assert_eq!(res, Colour::new(1.0, 1.0, 1.0))
         }
 
@@ -111,7 +112,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 10, -10));
 
-            let res = m.lighting(&light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec, false);
             assert_eq!(res, Colour::new(0.7364, 0.7364, 0.7364))
         }
 
@@ -122,7 +123,7 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 10, -10));
 
-            let res = m.lighting(&light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec, false);
             assert_eq!(res, Colour::new(1.6364, 1.6364, 1.6364))
         }
 
@@ -133,7 +134,18 @@ mod test {
             let normal_vec = vectori(0, 0, -1);
             let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, 10));
 
-            let res = m.lighting(&light, position, eye_vec, normal_vec);
+            let res = m.lighting(&light, position, eye_vec, normal_vec, false);
+            assert_eq!(res, Colour::new(0.1, 0.1, 0.1))
+        }
+
+        #[test]
+        fn in_shadow() {
+            let (m, position): (Material, Tuple) = (Default::default(), ZERO_POINT);
+            let eye_vec = Tuple::vectori(0, 0, -1);
+            let normal_vec = vectori(0, 0, -1);
+            let light = PointLight::new(Colour::newi(1, 1, 1), pointi(0, 0, -10));
+
+            let res = m.lighting(&light, position, eye_vec, normal_vec, true);
             assert_eq!(res, Colour::new(0.1, 0.1, 0.1))
         }
     }

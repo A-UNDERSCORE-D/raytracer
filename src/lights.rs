@@ -20,6 +20,10 @@ impl PointLight {
             position,
         }
     }
+
+    pub fn new_boxed(intensity: Colour, position: Tuple) -> Box<PointLight> {
+        Box::new(PointLight::new(intensity, position))
+    }
 }
 
 impl Light for PointLight {

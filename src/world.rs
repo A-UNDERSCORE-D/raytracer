@@ -3,7 +3,10 @@ use crate::{
     intersection::{IntersectVec, Intersection, IntersectionComputions},
     lights::{Light, PointLight},
     materials::Material,
-    math::{matrix::Matrix, tuple::pointi},
+    math::{
+        matrix::Matrix,
+        tuple::{pointi, Tuple},
+    },
     ray::Ray,
     shape::{sphere::Sphere, Shape},
 };
@@ -33,17 +36,19 @@ impl World {
     }
 
     pub fn shade_hit(&self, comps: IntersectionComputions) -> Colour {
+        let count = self.light.len() as f64;
         self.light
             .iter()
             .map(|l| {
                 comps.object.material().lighting(
                     &**l,
-                    comps.point,
+                    comps.over_point,
                     comps.eye_vector,
                     comps.normal_vector,
+                    self.is_shadowed_by(&**l, comps.over_point),
                 )
             })
-            .reduce(|acc, c| acc + c)
+            .reduce(|acc, c| acc + (c / count))
             .unwrap()
     }
 
@@ -58,6 +63,21 @@ impl World {
         let hit = hit.unwrap();
 
         self.shade_hit(hit.prepare_computations(ray))
+    }
+
+    pub fn is_shadowed(&self, point: Tuple) -> bool {
+        self.light.iter().any(|l| self.is_shadowed_by(&**l, point))
+    }
+
+    fn is_shadowed_by(&self, light: &dyn Light, point: Tuple) -> bool {
+        let v = *light.position() - point;
+        let distance = v.magnitude();
+        let direction = v.normalize();
+        let xs = self.intersect_world(Ray::new(point, direction));
+
+        let hit = xs.hit();
+
+        hit.is_some_and(|hits| hits.t < distance)
     }
 }
 
@@ -124,7 +144,10 @@ mod test {
         }
     }
     mod shading {
-        use crate::{intersection::Intersection, lights::PointLight, math::tuple::point};
+        use crate::{
+            intersection::Intersection, lights::PointLight, math::tuple::point,
+            shape::sphere::Sphere,
+        };
 
         use super::*;
 
@@ -145,7 +168,7 @@ mod test {
         fn inside() {
             let w = World {
                 light: vec![Box::new(PointLight::new(
-                    Colour::new(1.0, 1.0, 1.0),
+                    Colour::WHITE,
                     point(0.0, 0.25, 0.0),
                 ))],
                 ..World::default()
@@ -158,6 +181,24 @@ mod test {
             let c = w.shade_hit(comps);
 
             assert_eq!(c, Colour::new(0.90498, 0.90498, 0.90498))
+        }
+
+        #[test]
+        fn shadowed_hit() {
+            let w = World {
+                light: vec![PointLight::new_boxed(Colour::WHITE, pointi(0, 0, -10))],
+                objects: vec![
+                    Box::new(Sphere::default()),
+                    Box::new(Sphere::new_with_transform(Matrix::translationi(0, 0, 10))),
+                ],
+            };
+
+            let r = Ray::new(pointi(0, 0, 5), vectori(0, 0, 1));
+            let i = Intersection::new(4.0, &*w.objects[1]);
+
+            let comps = i.prepare_computations(r);
+
+            assert_eq!(w.shade_hit(comps), Colour::new(0.1, 0.1, 0.1));
         }
 
         mod colour_at {
@@ -200,6 +241,25 @@ mod test {
 
                 assert_eq!(w.colour_at(ray), w.objects[1].material().colour)
             }
+        }
+
+        mod shadow {
+            use super::*;
+
+            macro_rules! shadow_test {
+                ($name:ident, $point:expr, $expected:expr) => {
+                    #[test]
+                    fn $name() {
+                        let w = World::default();
+                        assert_eq!(w.is_shadowed($point), $expected)
+                    }
+                };
+            }
+
+            shadow_test!(unshadowed, pointi(0, 10, 0), false);
+            shadow_test!(shadowed, pointi(10, -10, 10), true);
+            shadow_test!(behind_light, pointi(-20, 20, -20), false);
+            shadow_test!(between_light_object, pointi(-2, 2, -2), false);
         }
     }
 }
