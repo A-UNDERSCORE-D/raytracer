@@ -1,17 +1,16 @@
 use std::{
-    sync::{mpsc, Arc, Mutex, RwLock},
+    sync::{mpsc, Arc},
     thread,
 };
 
 use crate::{
-    canvas::{self, Canvas},
-    colour::Colour,
+    canvas::Canvas,
     math::{
         matrix::{Matrix, IDENTITY_4X4},
-        tuple::{point, pointi, ZERO_POINT},
+        tuple::{point, ZERO_POINT},
     },
     ray::Ray,
-    world::{self, World},
+    world::World,
 };
 
 #[derive(Clone)]
@@ -124,7 +123,13 @@ impl Camera {
 
         drop(tx); // drop the "last" one; when all the threads exit we know we're done
 
+        let mut count = 0;
+        let total = self.hsize * self.vsize;
         while let Ok((x, y, c)) = rx.recv() {
+            count += 1;
+            if count % 1000 == 0 {
+                print!("{count} / {total}\r");
+            }
             canvas[(x, y)] = c;
         }
 
