@@ -21,6 +21,17 @@ macro_rules! impl_trait_simple {
                 }
             }
         }
+
+        impl $trait<f64> for Colour {
+            type Output = Colour;
+            fn $funcname(self, rhs: f64) -> Self::Output {
+                Self {
+                    red: self.red $op rhs,
+                    green: self.green $op rhs,
+                    blue: self.blue $op rhs,
+                }
+            }
+        }
     };
 }
 
@@ -58,16 +69,6 @@ impl Colour {
     }
 }
 
-impl Mul<f64> for Colour {
-    type Output = Self;
-    fn mul(self, rhs: f64) -> Self::Output {
-        Self {
-            red: self.red * rhs,
-            green: self.green * rhs,
-            blue: self.blue * rhs,
-        }
-    }
-}
 impl Mul<i32> for Colour {
     type Output = Self;
     fn mul(self, rhs: i32) -> Self::Output {
