@@ -55,7 +55,7 @@ impl Matrix {
         out
     }
 
-    pub fn rotatation_z(radians: f64) -> Self {
+    pub fn rotation_z(radians: f64) -> Self {
         let mut out = IDENTITY_4X4.clone();
 
         let sin = radians.sin();
@@ -125,7 +125,7 @@ impl Matrix {
     }
 
     pub fn rotate_z(self, radians: f64) -> Self {
-        Self::rotatation_z(radians) * self
+        Self::rotation_z(radians) * self
     }
 }
 
@@ -216,13 +216,13 @@ mod test {
     );
     translation_test!(
         rotate_z_half_quater,
-        Matrix::rotatation_z(std::f64::consts::FRAC_PI_4),
+        Matrix::rotation_z(std::f64::consts::FRAC_PI_4),
         Tuple::pointi(0, 1, 0),
         Tuple::point(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
     );
     translation_test!(
         rotate_z_quater,
-        Matrix::rotatation_z(std::f64::consts::FRAC_PI_2),
+        Matrix::rotation_z(std::f64::consts::FRAC_PI_2),
         Tuple::pointi(0, 1, 0),
         Tuple::pointi(-1, 0, 0)
     );

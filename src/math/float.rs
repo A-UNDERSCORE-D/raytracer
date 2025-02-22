@@ -1,4 +1,6 @@
-const MAX_DIFF: f64 = 0.00001;
+pub const MAX_DIFF: f64 = 0.00001;
+pub const EPSILON: f64 = MAX_DIFF;
+
 pub fn equal(a: f64, b: f64) -> bool {
     (a - b).abs() < MAX_DIFF
 }

@@ -1,7 +1,4 @@
-use std::{
-    io::Read,
-    ops::{Index, IndexMut},
-};
+use std::ops::{Index, IndexMut};
 
 use crate::colour::Colour;
 

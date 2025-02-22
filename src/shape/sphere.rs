@@ -188,7 +188,7 @@ mod test {
         );
         normal_at!(
             transformed,
-            Matrix::scaling(1.0, 0.5, 1.0) * Matrix::rotatation_z(PI / 5.0),
+            Matrix::scaling(1.0, 0.5, 1.0) * Matrix::rotation_z(PI / 5.0),
             Tuple::point(0.0, SQRT_2 / 2.0, -SQRT_2 / 2.0),
             Tuple::vector(0.0, 0.97014, -0.24254)
         );

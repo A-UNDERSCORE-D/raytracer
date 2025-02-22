@@ -41,8 +41,10 @@ fn main() -> std::result::Result<(), std::io::Error> {
                 let point = ray.position(first.t);
                 let normal = first.object.normal_at(point);
                 let eye = -ray.direction;
-                canvas[(row_p, col_p)] =
-                    first.object.material().lighting(&light, point, eye, normal);
+                canvas[(row_p, col_p)] = first
+                    .object
+                    .material()
+                    .lighting(&light, point, eye, normal, false);
             }
         }
     }
