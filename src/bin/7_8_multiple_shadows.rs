@@ -10,7 +10,7 @@ use raytracer::{
     materials::Material,
     math::{
         matrix::Matrix,
-        tuple::{point, pointi, vectori, ZERO_POINT},
+        tuple::{point, vectori, ZERO_POINT},
     },
     shape::{sphere::Sphere, Shape},
     world::World,
