@@ -1,12 +1,22 @@
+
 use crate::{
     intersection::Intersection,
-    math::{matrix::Matrix, tuple::Tuple},
+    math::{
+        matrix::Matrix,
+        tuple::{Tuple, ZERO_POINT, ZERO_VEC},
+    },
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Tuple,
     pub direction: Tuple,
+}
+
+impl Default for Ray {
+    fn default() -> Self {
+        Self::new(ZERO_POINT, ZERO_VEC)
+    }
 }
 
 impl Ray {

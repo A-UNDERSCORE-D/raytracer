@@ -4,12 +4,13 @@ use raytracer::{
     canvas::Canvas,
     colour::Colour,
     lights::PointLight,
+    materials::Material,
     math::{
         matrix::Matrix,
         tuple::{pointi, Tuple},
     },
     ray::{Ray, RayIntersect},
-    shape::sphere::Sphere,
+    shape::{sphere::Sphere, Shape},
 };
 
 fn main() -> std::result::Result<(), std::io::Error> {
@@ -20,10 +21,14 @@ fn main() -> std::result::Result<(), std::io::Error> {
     let pixel_size = wall_size / canvas.width as f64;
     let wall_half = wall_size / 2.0;
 
-    let mut sphere =
-        Sphere::new_with_transform(Matrix::scaling(1.0, 0.5, 1.0).rotate_z(45_f64.to_radians()));
+    let sphere: &mut dyn Shape = &mut Sphere::new_with_transform(
+        Matrix::scaling(1.0, 0.5, 1.0).rotate_z(45_f64.to_radians()),
+    );
 
-    sphere.material.colour = Colour::new(1.0, 0.2, 1.0);
+    sphere.set_material(Material {
+        colour: Colour::new(1.0, 0.2, 1.0),
+        ..*sphere.material()
+    });
 
     let light = PointLight::new(Colour::newi(1, 1, 1), pointi(-10, 10, -10));
 

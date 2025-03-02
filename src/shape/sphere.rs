@@ -7,11 +7,12 @@ use crate::{
         matrix::Matrix,
         tuple::{Tuple, ZERO},
     },
-    ray::{Ray, RayIntersect},
+    ray::Ray,
 };
 
 use super::Shape;
 
+/// Its a sphere. What do you want from me?
 #[derive(Debug, PartialEq)]
 pub struct Sphere {
     _id: Uuid,
@@ -45,14 +46,33 @@ impl Default for Sphere {
     }
 }
 
-impl RayIntersect for Sphere {
-    fn intersect(&self, ray: Ray) -> Option<Vec<Intersection>> {
-        let ray = ray.transform(
-            &self
-                .transform
-                .inverse()
-                .expect("Must be able to invert the translation of the shape"),
-        );
+impl Shape for Sphere {
+    fn id(&self) -> Uuid {
+        self._id
+    }
+
+    fn local_normal_at(&self, point: Tuple) -> Tuple {
+        point - ZERO // At any point, the vector for the normal is the exact opposite of the point (as a vec)
+    }
+
+    fn material(&self) -> &Material {
+        &self.material
+    }
+
+    fn transform(&self) -> &Matrix {
+        &self.transform
+    }
+
+    fn set_transform(&mut self, transform: Matrix) {
+        self.transform = transform
+    }
+
+    fn set_material(&mut self, material: Material) {
+        self.material = material
+    }
+
+    fn local_interception(&self, local_space_ray: Ray) -> Option<Vec<Intersection>> {
+        let ray = local_space_ray;
         let s2r = ray.origin - Tuple::pointi(0, 0, 0);
 
         let a = ray.direction.dot(&ray.direction);
@@ -69,38 +89,6 @@ impl RayIntersect for Sphere {
             Intersection::new((-b - disroot) / (2.0 * a), self),
             Intersection::new((-b + disroot) / (2.0 * a), self),
         ])
-    }
-}
-
-impl Shape for Sphere {
-    fn id(&self) -> Uuid {
-        self._id
-    }
-
-    // Was a thing, isnt anymore.
-    // fn set_transform(&mut self, transform: Matrix) {
-    //     self.transform = transform
-    // }
-
-    fn normal_at(&self, point: Tuple) -> Tuple {
-        let inverted = &self
-            .transform
-            .inverse()
-            .expect("Non-invertable shape matrix");
-        let object_point = inverted * point;
-        let object_normal = object_point - ZERO;
-        let mut world_normal = inverted.transpose() * object_normal;
-
-        world_normal.w = 0.0; // Just force this to be 0 to ensure it behaves
-        world_normal.normalize()
-    }
-
-    fn material(&self) -> &Material {
-        &self.material
-    }
-
-    fn transform(&self) -> &Matrix {
-        &self.transform
     }
 }
 
@@ -130,6 +118,8 @@ mod test {
     // }
 
     mod normal {
+        use std::f64::consts::FRAC_1_SQRT_2;
+
         use super::*;
         macro_rules! normal_at {
             ($name:ident, $inp:expr, $out:expr) => {
@@ -183,8 +173,8 @@ mod test {
         normal_at!(
             translated,
             Matrix::translation(0.0, 1.0, 0.0),
-            Tuple::point(0.0, 1.70711, -0.70711),
-            Tuple::vector(0.0, 0.70711, -0.70711)
+            Tuple::point(0.0, 1.70711, -FRAC_1_SQRT_2),
+            Tuple::vector(0.0, FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
         );
         normal_at!(
             transformed,
@@ -267,9 +257,9 @@ mod test {
         #[test]
         fn translated() {
             let r = Ray::new(Tuple::pointi(0, 0, -5), Tuple::vectori(0, 0, 1));
-            let s = Sphere::new_with_transform(Matrix::translationi(5, 0, 0));
+            let s: Sphere = Sphere::new_with_transform(Matrix::translationi(5, 0, 0));
 
-            let xs = s.intersect(r);
+            let xs: Option<Vec<crate::intersection::Intersection<'_>>> = s.intersect(r);
             assert!(xs.is_none())
         }
     }

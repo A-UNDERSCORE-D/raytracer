@@ -7,7 +7,7 @@ use crate::{
         matrix::Matrix,
         tuple::{pointi, Tuple},
     },
-    ray::Ray,
+    ray::{Ray, RayIntersect},
     shape::{sphere::Sphere, Shape},
 };
 
