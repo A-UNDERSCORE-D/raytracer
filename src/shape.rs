@@ -7,16 +7,20 @@ use crate::{
     ray::{Ray, RayIntersect},
 };
 
+pub mod plane;
 pub mod sphere;
 mod test_shape;
 
-pub trait Shape: std::fmt::Debug {
+pub trait ShapeBase {
     fn id(&self) -> Uuid;
     fn transform(&self) -> &Matrix;
     fn material(&self) -> &Material;
-    fn local_interception(&self, local_space_ray: Ray) -> Option<Vec<Intersection>>;
     fn set_transform(&mut self, transform: Matrix);
     fn set_material(&mut self, material: Material);
+}
+
+pub trait Shape: std::fmt::Debug + ShapeBase {
+    fn local_interception(&self, local_space_ray: Ray) -> Option<Vec<Intersection>>;
     fn local_normal_at(&self, point: Tuple) -> Tuple;
     fn normal_at(&self, point: Tuple) -> Tuple {
         let inverted = &self.transform().inverse().unwrap();
@@ -50,3 +54,29 @@ impl PartialEq for &dyn Shape {
         self.id() == other.id()
     }
 }
+
+macro_rules! shape_base {
+    ($name:ident) => {
+        impl ShapeBase for $name {
+            fn id(&self) -> uuid::Uuid {
+                self._id
+            }
+            fn material(&self) -> &Material {
+                &self.material
+            }
+            fn transform(&self) -> &Matrix {
+                &self.transform
+            }
+
+            fn set_material(&mut self, material: Material) {
+                self.material = material
+            }
+
+            fn set_transform(&mut self, transform: Matrix) {
+                self.transform = transform
+            }
+        }
+    };
+}
+
+pub(crate) use shape_base; // Reexport this to make it make more sense

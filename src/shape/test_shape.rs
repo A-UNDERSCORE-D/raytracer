@@ -1,12 +1,10 @@
-use std::{
-    cell::RefCell,
-    sync::Mutex,
-};
+use std::{cell::RefCell, sync::Mutex};
 
 use crate::{
     materials::Material,
     math::{matrix::Matrix, tuple::Tuple},
     ray::Ray,
+    shape::{shape_base, ShapeBase},
 };
 
 use super::Shape;
@@ -14,24 +12,16 @@ use super::Shape;
 /// Not really used anywhere, mostly used o verify implementations (if any) in Shape
 #[derive(Debug, Default)]
 pub struct TestShape {
-    id: uuid::Uuid,
+    _id: uuid::Uuid,
     pub transform: Matrix,
     pub material: Material,
 
     saved_ray: Mutex<RefCell<Ray>>,
 }
 
-impl Shape for TestShape {
-    fn id(&self) -> uuid::Uuid {
-        self.id
-    }
-    fn material(&self) -> &Material {
-        &self.material
-    }
-    fn transform(&self) -> &Matrix {
-        &self.transform
-    }
+shape_base!(TestShape);
 
+impl Shape for TestShape {
     fn local_normal_at(&self, point: Tuple) -> Tuple {
         Tuple::vector(point.x, point.y, point.z)
     }
@@ -43,14 +33,6 @@ impl Shape for TestShape {
         self.saved_ray.lock().unwrap().replace(local_space_ray);
 
         None
-    }
-
-    fn set_material(&mut self, material: Material) {
-        self.material = material
-    }
-
-    fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform
     }
 }
 
@@ -66,7 +48,7 @@ mod test {
             tuple::{point, pointi, vector, vectori},
         },
         ray::{Ray, RayIntersect},
-        shape::Shape,
+        shape::{Shape, ShapeBase},
     };
 
     use super::TestShape;

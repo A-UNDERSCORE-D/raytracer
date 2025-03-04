@@ -8,6 +8,7 @@ use crate::{
         tuple::{Tuple, ZERO},
     },
     ray::Ray,
+    shape::{shape_base, ShapeBase},
 };
 
 use super::Shape;
@@ -20,7 +21,6 @@ pub struct Sphere {
     pub material: Material,
 }
 
-#[allow(clippy::new_without_default)]
 impl Sphere {
     pub fn new(transform: Matrix, material: Material) -> Self {
         //uuid
@@ -46,29 +46,11 @@ impl Default for Sphere {
     }
 }
 
-impl Shape for Sphere {
-    fn id(&self) -> Uuid {
-        self._id
-    }
+shape_base!(Sphere);
 
+impl Shape for Sphere {
     fn local_normal_at(&self, point: Tuple) -> Tuple {
         point - ZERO // At any point, the vector for the normal is the exact opposite of the point (as a vec)
-    }
-
-    fn material(&self) -> &Material {
-        &self.material
-    }
-
-    fn transform(&self) -> &Matrix {
-        &self.transform
-    }
-
-    fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform
-    }
-
-    fn set_material(&mut self, material: Material) {
-        self.material = material
     }
 
     fn local_interception(&self, local_space_ray: Ray) -> Option<Vec<Intersection>> {
